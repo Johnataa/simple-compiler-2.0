@@ -4,10 +4,10 @@ Trabalho acadêmico para desenvolver um compilador.
 ## Linguagem para reconhecimento
 Linguagem LALG (derivada do Pascal)
 
-### Gramática
+## Gramática
 Glalg = {N,T,P,S}
 
-#### Simbolos não terminais
+### Simbolos não terminais
 ```
 N = {<programa>, <corpo>, <dc>, <comando>, <comandos>, <dc_v>, <mais_dc>,
 <dc_p>, <variaveis>, <tipo_var>, <mais_var>, <parametros>, <corpo_p>,
@@ -15,13 +15,13 @@ N = {<programa>, <corpo>, <dc>, <comando>, <comandos>, <dc_v>, <mais_dc>,
 <pfalsa>, <condicao>, <expressao>, <relacao>, <termo>, <outros_termos>,
 <op_ad>, <op_un>, <fator>, <mais_fatores>, <op_mul>}
 ```
-#### Simbolos terminais
+### Simbolos terminais
 ```
 T = {ident, numero_int, numero_real, (, ), *, /, +, -, <>, >=, >, <, if, then, $, while, do,
 write, read, ;, else, begin, end, :, , , }
 ```
 
-#### Regras de produção
+### Regras de produção
 ```
 P = {
   <programa> ::= program ident <corpo> .
@@ -63,3 +63,15 @@ P = {
   <fator> ::= ident | numero_int | numero_real | (<expressao>)
 }
 ```
+
+## Observações
+* Comentários na LALG: entre { } ou /* */
+* Identificadores e números são itens léxicos da forma:
+
+      Ident: sequência de letras e dígitos, começando por letra.
+      Número inteiro: sequência de dígitos (0 a 9).
+      Número real: sequencia de um ou mais dígitos seguido de um ponto decimal seguido de um ou mais digitos.     
+      
+* Palavras reservadas – são os tokens usados para fins específicos, ou seja, que são previamente definidos na linguagem.
+* Símbolos simples e duplos – são aqueles também definidos na linguagem (<, $, >, etc. como exemplo de simples, e := como exemplo de duplo).
+
