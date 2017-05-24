@@ -63,3 +63,17 @@ P = {
   <fator> ::= ident | numero_int | numero_real | (<expressao>)
 }
 ```
+
+### Observações
+* Comentários na LALG: entre { } ou /* */
+* Identificadores e números são itens léxicos da forma:
+
+      Ident: sequência de letras e dígitos, começando por letra.
+      Número inteiro: sequência de dígitos (0 a 9).
+      Número real: sequencia de um ou mais dígitos seguido de um ponto decimal seguido de um ou mais digitos.     
+      
+* palavras reservadas – são os tokens usados para fins específicos, ou seja, que são
+previamente definidos na linguagem.
+* símbolos simples e duplos – são aqueles também definidos na linguagem (<, $, >, etc.
+como exemplo de simples, e := como exemplo de duplo).
+
