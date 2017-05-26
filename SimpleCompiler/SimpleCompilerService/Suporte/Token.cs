@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace SimpleCompilerService.Suporte
@@ -27,17 +28,13 @@ namespace SimpleCompilerService.Suporte
         private string GetTagDescription()
         {
             FieldInfo fi = Tipo.GetType().GetField(Tipo.ToString());
+            DescriptionAttribute attr = Attribute.GetCustomAttribute(fi, typeof(DescriptionAttribute)) as DescriptionAttribute;
 
-            DescriptionAttribute[] attributes =
-                (DescriptionAttribute[])fi.GetCustomAttributes(
-                typeof(DescriptionAttribute),
-                false);
-
-            if (attributes != null &&
-                attributes.Length > 0)
-                return attributes[0].Description;
-            else
-                return Tipo.ToString();
+            if (attr != null)
+            {
+                return attr.Description;
+            }
+            return null;
         }
         #endregion
 
