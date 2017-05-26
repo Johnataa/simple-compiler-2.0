@@ -1,5 +1,5 @@
 # Simple Compiler 2.0
-Trabalho acadêmico para desenvolver um compilador.
+Trabalho acadêmico para desenvolver um compilador simples em C#.
 
 ## Linguagem para reconhecimento
 Linguagem LALG (derivada do Pascal)
@@ -17,8 +17,14 @@ N = {<programa>, <corpo>, <dc>, <comando>, <comandos>, <dc_v>, <mais_dc>,
 ```
 ### Simbolos terminais
 ```
-T = {ident, numero_int, numero_real, (, ), *, /, +, -, <>, >=, >, <, if, then, $, while, do,
-write, read, ;, else, begin, end, :, , , }
+T = {ident, numero_int, numero_real, program, procedure, if, then, while, do, write,
+read, else, begin, end, integer, real, (, ), *, /, +, -, >, <, =, $, ;, :, ,, <>, >=, <= }
+
+Palavras reservadas: { program, procedure, if, then, while, do, write, read, else, begin, end, integer, real }
+Simbolos simples: { (, ), *, /, +, -, >, <, =, $, ;, :, , }
+Simbolos duplos: { <>, >=, <= }
+Números inteiros: (0..9)+
+Números reais: (0..9)+.(0..9)+
 ```
 
 ### Regras de produção
