@@ -41,10 +41,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Suporte\Tipo.cs" />
+    <Compile Include="Suporte\Token.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Analisador\" />
-    <Folder Include="Token\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

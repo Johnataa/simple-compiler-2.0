@@ -100,5 +100,14 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleCompilerService\SimpleCompilerService.csproj">
+      <Project>{fe577550-fa52-42d9-ba4f-dcedc5c5205d}</Project>
+      <Name>SimpleCompilerService</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
