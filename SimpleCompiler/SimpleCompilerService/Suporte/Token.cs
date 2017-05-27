@@ -41,7 +41,7 @@ namespace SimpleCompilerService.Suporte
         #region 3. Sobrecarga de Métodos
         public override string ToString()
         {
-            return "Lexema: " + Lexema.ToString() + "\nTag:" + GetTagDescription() + "\nLinha:" + Linha;
+            return "Lexema: " + Lexema.ToString() + "\n Tag: " + GetTagDescription() + "\n Linha: " + Linha;
         }
         #endregion
     }

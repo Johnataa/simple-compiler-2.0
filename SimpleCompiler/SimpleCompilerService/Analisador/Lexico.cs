@@ -11,8 +11,8 @@ namespace SimpleCompilerService.Analisador
     public class Lexico
     {
         #region 1. Propriedades e Cosntrutores
-        private static Queue<char> Texto;
-        private static Queue<Token> Tokens;
+        public static Queue<char> Texto;
+        public static Queue<Token> Tokens;
         private static Char? Peek;
         private static int Linha;
 
@@ -29,143 +29,176 @@ namespace SimpleCompilerService.Analisador
             Token t;
             NextChar();
             #endregion
-
-            do
+            while (Peek != null)
             {
                 #region 2.2 Tratamento de quebra de linhas, comentários, espaços e tabulações
-                while (Peek != null)
+                if (Peek == '\n')
                 {
-                    if (Peek == '\n')
+                    Linha++;
+                    NextChar();
+                    continue;
+                }
+                else if (Peek == '{')
+                {
+                    while (Peek != null)
                     {
-                        Linha++;
-                    }
-                    else if (Peek == '{')
-                    {
-                        while (Peek != null)
+                        NextChar();
+                        if (Peek == '}')
                         {
-                            if (Peek == '}')
-                            {
-                                break;
-                            }
-                            NextChar();
-                        }
-                    } 
-                    else if (Peek == '/' && NextCharIs('*'))
-                    {
-                        NextChar(); NextChar();
-                        while(Peek != null)
-                        {
-                            if(Peek == '*' && NextCharIs('/'))
-                            {
-                                break;
-                            }
-                            NextChar();
+                            break;
                         }
                     }
-                    else if (Peek != ' ' && Peek != '\t')
+                    NextChar();
+                    continue;
+                }
+                else if (Peek == '/' && NextCharIs('*'))
+                {
+                    NextChar(); NextChar();
+                    while (Peek != null)
                     {
-                        break;
+                        NextChar();
+                        if (Peek == '*' && NextCharIs('/'))
+                        {
+                            NextChar();
+                            break;
+                        }
                     }
+                    NextChar();
+                    continue;
+                }
+                else if (Peek == ' ' || Peek == '\t')
+                {
+                    NextChar();
+                    continue;
+                }
+                #endregion
+
+                #region 2.3 Constrói fila de Tokens
+                t = ConstroiToken();
+                Tokens.Enqueue(t);
+                if (t.Tag == Tag.OPERADOR || t.Tag == Tag.SIMBOLO_DUPLO || t.Tag == Tag.SIMBOLO_SIMPLES)
+                {
                     NextChar();
                 }
                 #endregion
-
-                #region 2.3 Criação de Tokens de Simbolos Simples e Duplos
-                switch (Peek)
-                {
-                    case '.':
-                        t = new Token('.', Tag.SIMBOLO_SIMPLES, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case ',':
-                        t = new Token(',', Tag.SIMBOLO_SIMPLES, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case '(':
-                        t = new Token('(', Tag.SIMBOLO_SIMPLES, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case ')':
-                        t = new Token(')', Tag.SIMBOLO_SIMPLES, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case ';':
-                        t = new Token(';', Tag.SIMBOLO_SIMPLES, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case '=':
-                        t = new Token('=', Tag.SIMBOLO_SIMPLES, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case '+':
-                        t = new Token('+', Tag.OPERADOR, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case '-':
-                        t = new Token('-', Tag.OPERADOR, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case '*':
-                        t = new Token('*', Tag.OPERADOR, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case '/':
-                        t = new Token('/', Tag.OPERADOR, Linha);
-                        Tokens.Enqueue(t);
-                        break;
-                    case ':':
-                        if (NextCharIs('='))
-                        {
-                            t = new Token(":=", Tag.SIMBOLO_DUPLO, Linha);
-                            NextChar();
-                        }
-                        else
-                        {
-                            t = new Token(':', Tag.SIMBOLO_SIMPLES, Linha);
-                        }
-                        Tokens.Enqueue(t);
-                        break;
-                    case '>':
-                        if (NextCharIs('='))
-                        {
-                            t = new Token(">=", Tag.SIMBOLO_DUPLO, Linha);
-                            NextChar();
-                        }
-                        else
-                        {
-                            t = new Token('>', Tag.SIMBOLO_SIMPLES, Linha);
-                        }
-                        Tokens.Enqueue(t);
-                        break;
-                    case '<':
-                        if (NextCharIs('='))
-                        {
-                            t = new Token("<=", Tag.SIMBOLO_DUPLO, Linha);
-                            NextChar();
-                        }
-                        else if (NextCharIs('>'))
-                        {
-                            t = new Token("<>", Tag.SIMBOLO_DUPLO, Linha);
-                            NextChar();
-                        }
-                        else
-                        {
-                            t = new Token('<', Tag.SIMBOLO_SIMPLES, Linha);
-                        }
-                        Tokens.Enqueue(t);
-                        break;
-                }
-                #endregion
-
-            } while (Peek != null);
-
+            }
         }
         #endregion
 
         #region 3. Métodos Privados
+        private static Token ConstroiToken()
+        {
+            #region 3.1 Constrói Tokens de Simbolos Simples e Duplos
+            switch (Peek)
+            {
+                case '.':
+                    return new Token('.', Tag.SIMBOLO_SIMPLES, Linha);
+                case ',':
+                    return new Token(',', Tag.SIMBOLO_SIMPLES, Linha);
+                case '(':
+                    return new Token('(', Tag.SIMBOLO_SIMPLES, Linha);
+                case ')':
+                    return new Token(')', Tag.SIMBOLO_SIMPLES, Linha);
+                case ';':
+                    return new Token(';', Tag.SIMBOLO_SIMPLES, Linha);
+                case '=':
+                    return new Token('=', Tag.SIMBOLO_SIMPLES, Linha);
+                case '+':
+                    return new Token('+', Tag.OPERADOR, Linha);
+                case '-':
+                    return new Token('-', Tag.OPERADOR, Linha);
+                case '*':
+                    return new Token('*', Tag.OPERADOR, Linha);
+                case '/':
+                    return new Token('/', Tag.OPERADOR, Linha);
+                case ':':
+                    if (NextCharIs('='))
+                    {
+                        NextChar();
+                        return new Token(":=", Tag.SIMBOLO_DUPLO, Linha);
+                    }
+                    else
+                    {
+                        return new Token(':', Tag.SIMBOLO_SIMPLES, Linha);
+                    }
+                case '>':
+                    if (NextCharIs('='))
+                    {
+                        NextChar();
+                        return new Token(">=", Tag.SIMBOLO_DUPLO, Linha);
+                    }
+                    else
+                    {
+                        return new Token('>', Tag.SIMBOLO_SIMPLES, Linha);
+                    }
+                case '<':
+                    if (NextCharIs('='))
+                    {
+                        NextChar();
+                        return new Token("<=", Tag.SIMBOLO_DUPLO, Linha);
+                            
+                    }
+                    else if (NextCharIs('>'))
+                    {
+                        NextChar();
+                        return new Token("<>", Tag.SIMBOLO_DUPLO, Linha);
+                    }
+                    else
+                    {
+                        return new Token('<', Tag.SIMBOLO_SIMPLES, Linha);
+                    }
+            }
+            #endregion
+
+            #region 3.2 Constrói Tokens Numéricos
+            if (Char.IsDigit((char)Peek))
+            {
+                int v = 0;
+                do
+                {
+                    v = 10 * v + int.Parse(Peek.ToString());
+                    NextChar();
+                } while (Peek != null && Char.IsDigit((char)Peek));
+                if (Peek != '.')
+                {
+                    return new Token(v, Tag.NUMERO_INTEIRO, Linha);
+                }
+                float x = v;
+                float d = 10;
+                do
+                {
+                    x = x + float.Parse(Peek.ToString()) / d;
+                    d = d * 10;
+                    NextChar();
+                } while (Peek != null && Char.IsDigit((char) Peek));
+                return new Token(x, Tag.NUMERO_REAL, Linha);
+            }
+            #endregion
+
+            #region 3.3 Constói Tokens de Palavras Reservadas e Identificadores
+            if (Char.IsLetter((char)Peek))
+            {
+                StringBuilder sb = new StringBuilder();
+                do
+                {
+                    sb.Append(Peek);
+                    NextChar();
+                } while (Peek != null && Char.IsLetterOrDigit((char)Peek));
+                string lexema = sb.ToString();
+                if (EhPalavraReservada(lexema))
+                {
+                    return new Token(lexema, Tag.PALAVRA_RESERVADA, Linha);
+                }
+                return new Token(lexema, Tag.IDENTIFICADOR, Linha);
+            }
+            #endregion
+
+            return null;
+        }
+
         private static void NextChar()
         {
-            if (!Texto.Any())
+            if (Texto.Any())
             {
                 Peek = Texto.Dequeue();
             }
@@ -196,19 +229,17 @@ namespace SimpleCompilerService.Analisador
             return fc;
         }
 
-        private static Token ObterPalavraReservada(string lexema)
+        private static bool EhPalavraReservada(string lexema)
         {
-            Token t = null;
-            string[] lexemas = "program procedure if then while do write read else begin end integer real".Split(' ');
+            string[] lexemas = "var program procedure if then while do write read else begin end integer real".Split(' ');
             foreach (var lex in lexemas)
             {
                 if(lex == lexema)
                 {
-                    t = new Token(lex, Tag.PALAVRA_RESERVADA, Linha);
-                    break;
+                    return true;
                 }
             }
-            return t;
+            return false;
         }
         #endregion
     }
