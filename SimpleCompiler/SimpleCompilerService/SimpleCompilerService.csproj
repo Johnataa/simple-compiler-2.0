@@ -40,12 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analisador\Lexico.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Suporte\Tipo.cs" />
+    <Compile Include="Suporte\Tag.cs" />
     <Compile Include="Suporte\Token.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Analisador\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

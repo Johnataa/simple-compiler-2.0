@@ -2,7 +2,7 @@
 
 namespace SimpleCompilerService.Suporte
 {
-    public enum Tipo
+    public enum Tag
     {
         [Description("Operador")]
         OPERADOR,

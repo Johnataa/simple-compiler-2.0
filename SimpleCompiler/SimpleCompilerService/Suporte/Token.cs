@@ -4,17 +4,17 @@ using System.Reflection;
 
 namespace SimpleCompilerService.Suporte
 {
-    public class Token<T>
+    public class Token
     {
         #region 1. Propriedades e Construtores
-        public T Lexema { get; set; }
-        public Tipo Tipo { get; set; }
+        public object Lexema { get; set; }
+        public Tag Tag { get; set; }
         public int Linha { get; set; }
 
-        public Token(T lexema, Tipo tipo, int linha)
+        public Token(object lexema, Tag tag, int linha)
         {
             Lexema = lexema;
-            Tipo = tipo;
+            Tag = tag;
             Linha = linha;
         }
 
@@ -27,7 +27,7 @@ namespace SimpleCompilerService.Suporte
         #region 2. Métodos Privados
         private string GetTagDescription()
         {
-            FieldInfo fi = Tipo.GetType().GetField(Tipo.ToString());
+            FieldInfo fi = Tag.GetType().GetField(Tag.ToString());
             DescriptionAttribute attr = Attribute.GetCustomAttribute(fi, typeof(DescriptionAttribute)) as DescriptionAttribute;
 
             if (attr != null)
@@ -41,7 +41,7 @@ namespace SimpleCompilerService.Suporte
         #region 3. Sobrecarga de Métodos
         public override string ToString()
         {
-            return "Lexema: " + Lexema + "\nTipo:" + GetTagDescription() + "\nLinha:" + Linha;
+            return "Lexema: " + Lexema.ToString() + "\nTag:" + GetTagDescription() + "\nLinha:" + Linha;
         }
         #endregion
     }
