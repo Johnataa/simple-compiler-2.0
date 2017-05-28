@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleCompilerPresentation"
         mc:Ignorable="d"
-        Title="Simple Compiler 2.0" Height="350" Width="525" WindowStartupLocation="CenterScreen"
+        Title="Simple Compiler 2.0" Height="500" Width="800" WindowStartupLocation="CenterScreen"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
          TextElement.Foreground="{DynamicResource MaterialDesignBody}"
          TextElement.FontWeight="Regular"
@@ -14,10 +14,82 @@
          TextOptions.TextRenderingMode="Auto"
          Background="{DynamicResource MaterialDesignPaper}"
          FontFamily="{DynamicResource MaterialDesignFont}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBlock.xaml" />
+                <!-- throw in some extra colour for our floating action button -->
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Green.Named.Primary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Open"
+                        Executed="Executed_Open"/>
+        <CommandBinding Command="ApplicationCommands.Save"
+                        Executed="Executed_Save"/>
+        <CommandBinding Command="ApplicationCommands.SaveAs"
+                        Executed="Executed_SaveAs"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Command="ApplicationCommands.Open"
+                    Gesture="Ctrl+O"/>
+        <KeyBinding Command="ApplicationCommands.Save"
+                    Gesture="Ctrl+S"/>
+        <KeyBinding Command="ApplicationCommands.SaveAs"
+                    Gesture="Ctrl+Shift+S"/>
+    </Window.InputBindings>
     <Grid>
-        <materialDesign:Card Padding="32" Margin="16">
-            <TextBlock Style="{DynamicResource MaterialDesignTitleTextBlock}">My First Material Design App</TextBlock>
-        </materialDesign:Card>
-        <Button Width="200">Primeiro Botão</Button>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80" />
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="80" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.ColumnSpan="2" Margin="15" VerticalAlignment="Center" FontSize="34" FontFamily="Segoe UI" HorizontalAlignment="Center">Compiladores 2</TextBlock>
+        <TextBlock Margin="10 50 0 0" FontSize="18" FontFamily="Segoe UI" HorizontalAlignment="Left">Linguagem LALG</TextBlock>
+        <WrapPanel Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0 0 10 0">
+            <TextBlock x:Name="Filename" FontSize="12" FontFamily="Segoe UI" Margin="0 0 5 0" Visibility="Hidden">Filename</TextBlock>
+            <materialDesign:PackIcon x:Name="CheckFile" Kind="CheckboxMultipleBlankOutline"/>
+        </WrapPanel>
+        <RichTextBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Background="WhiteSmoke" VerticalScrollBarVisibility="Auto" Margin="10 0 10 0" x:Name="CodigoFonte" FontFamily="Ubuntu Mono" AcceptsTab="True" TextChanged="CodigoFonte_TextChanged">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0 0"/>
+                    <Setter Property="Padding" Value="5 5"/>
+                </Style>
+            </RichTextBox.Resources>
+            <FlowDocument FontSize="18">
+            </FlowDocument>
+        </RichTextBox>
+        
+        <Button x:Name="BtnCompilar" Grid.Column="0" Grid.Row="2" Margin="29,16,0,16" HorizontalAlignment="Left" Width="200" Click="BtnCompilar_Click">Compilar</Button>
+        
+        
+        <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+                                 HorizontalAlignment="Right"
+                                 Grid.Column="1" Grid.Row="2" Margin="0 0 15 0">
+            <StackPanel>
+                <Button x:Name="BtnAbrir" ToolTip="Abrir" Click="BtnAbrir_Click"
+                        Background="{DynamicResource PrimaryHueMidBrush}"
+                        Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
+                    <materialDesign:PackIcon Kind="OpenInApp" />
+                </Button>
+                <Button x:Name="BtnSalvar" ToolTip="Salvar" Click="BtnSalvar_Click"
+                        Background="{DynamicResource SecondaryAccentBrush}"
+                        Foreground="{DynamicResource SecondaryAccentForegroundBrush}">
+                    <materialDesign:PackIcon Kind="ContentSave" />
+                </Button>
+                <Button x:Name="BtnSalvarComo" ToolTip="Salvar Como" Click="BtnSalvarComo_Click"
+                        Background="Aqua" BorderBrush="AliceBlue">
+                    <materialDesign:PackIcon Kind="ContentSaveAll" />
+                </Button>
+            </StackPanel>
+        </materialDesign:PopupBox>
     </Grid>
 </Window>

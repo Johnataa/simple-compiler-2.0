@@ -11,8 +11,9 @@ namespace SimpleCompilerService.Analisador
     public class Lexico
     {
         #region 1. Propriedades e Cosntrutores
-        public static Queue<char> Texto;
+        private static Queue<char> Texto;
         public static Queue<Token> Tokens;
+        public static bool ContemErroLexico { get; set; }
         private static Char? Peek;
         private static int Linha;
 
@@ -20,11 +21,12 @@ namespace SimpleCompilerService.Analisador
         #endregion
 
         #region 2. Métodos Públicos 
-        public static void ScanearTexto(string str)
+        public static void ScanText(string str)
         {
             #region 2.1 Inicialização de Variáveis
             Texto = ParseToCharQueue(str);
             Tokens = new Queue<Token>();
+            ContemErroLexico = false;
             Linha = 1;
             Token t;
             NextChar();
@@ -66,7 +68,7 @@ namespace SimpleCompilerService.Analisador
                     NextChar();
                     continue;
                 }
-                else if (Peek == ' ' || Peek == '\t')
+                else if (Peek == ' ' || Peek == '\t' || Peek == '\r')
                 {
                     NextChar();
                     continue;
@@ -74,19 +76,37 @@ namespace SimpleCompilerService.Analisador
                 #endregion
 
                 #region 2.3 Constrói fila de Tokens
-                t = ConstroiToken();
+                t = BuildToken();
                 Tokens.Enqueue(t);
-                if (t.Tag == Tag.OPERADOR || t.Tag == Tag.SIMBOLO_DUPLO || t.Tag == Tag.SIMBOLO_SIMPLES)
+                if (t.Tag == Tag.OPERADOR || t.Tag == Tag.SIMBOLO_DUPLO || t.Tag == Tag.SIMBOLO_SIMPLES || t.Tag == Tag.ERRO_LEXICO)
                 {
                     NextChar();
                 }
                 #endregion
             }
         }
+
+        public static Token ProximoToken()
+        {
+            if (Tokens != null && Tokens.Any())
+            {
+                return Tokens.Dequeue();
+            }
+            return null;
+        }
+
+        public static bool ProximoTokenEh(string lexema)
+        {
+            if (Tokens != null && Tokens.Any())
+            {
+                return Tokens.Peek().Lexema.ToString() == lexema;
+            }
+            return false;
+        }
         #endregion
 
         #region 3. Métodos Privados
-        private static Token ConstroiToken()
+        private static Token BuildToken()
         {
             #region 3.1 Constrói Tokens de Simbolos Simples e Duplos
             switch (Peek)
@@ -185,7 +205,7 @@ namespace SimpleCompilerService.Analisador
                     NextChar();
                 } while (Peek != null && Char.IsLetterOrDigit((char)Peek));
                 string lexema = sb.ToString();
-                if (EhPalavraReservada(lexema))
+                if (IsReservedWord(lexema))
                 {
                     return new Token(lexema, Tag.PALAVRA_RESERVADA, Linha);
                 }
@@ -193,7 +213,8 @@ namespace SimpleCompilerService.Analisador
             }
             #endregion
 
-            return null;
+            ContemErroLexico = true;
+            return new Token(Peek, Tag.ERRO_LEXICO, Linha);
         }
 
         private static void NextChar()
@@ -229,7 +250,7 @@ namespace SimpleCompilerService.Analisador
             return fc;
         }
 
-        private static bool EhPalavraReservada(string lexema)
+        private static bool IsReservedWord(string lexema)
         {
             string[] lexemas = "var program procedure if then while do write read else begin end integer real".Split(' ');
             foreach (var lex in lexemas)

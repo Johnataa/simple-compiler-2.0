@@ -23,7 +23,9 @@ namespace SimpleCompilerService.Suporte
         NUMERO_REAL,
 
         [Description("Identificador")]
-        IDENTIFICADOR
+        IDENTIFICADOR,
 
+        [Description("Erro Léxico")]
+        ERRO_LEXICO
     }
 }
