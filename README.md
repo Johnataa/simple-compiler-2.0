@@ -17,10 +17,10 @@ N = {<programa>, <corpo>, <dc>, <comando>, <comandos>, <dc_v>, <mais_dc>,
 ```
 ### Simbolos terminais
 ```
-T = {ident, numero_int, numero_real, program, procedure, if, then, while, do, write,
+T = {var, ident, numero_int, numero_real, program, procedure, if, then, while, do, write,
 read, else, begin, end, integer, real, (, ), *, /, +, -, >, <, =, $, ;, :, ,, ., <>, >=, <=, := }
 
-Palavras reservadas: { program, procedure, if, then, while, do, write, read, else, begin, end, integer, real }
+Palavras reservadas: { program, var, procedure, if, then, while, do, write, read, else, begin, end, integer, real }
 Simbolos simples: { (, ), *, /, +, -, >, <, =, $, ;, :, ,, . }
 Simbolos duplos: { <>, >=, <=, := }
 Números inteiros: (0..9)+
