@@ -81,3 +81,9 @@ P = {
 * Palavras reservadas – são os tokens usados para fins específicos, ou seja, que são previamente definidos na linguagem.
 * Símbolos simples e duplos – são aqueles também definidos na linguagem (<, $, >, etc. como exemplo de simples, e := como exemplo de duplo).
 
+## Screenshots]
+<figure>
+  <img src="https://raw.githubusercontent.com/Johnataa/simple-compiler-2.0/master/SimpleCompiler/SimpleCompilerPresentation/interface.png" width="80%" height="80%" title="Interface Gráfica"/>
+  <figcaption>Interface Gráfica</figcaption>
+</figure>
+
