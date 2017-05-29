@@ -17,10 +17,10 @@ N = {<programa>, <corpo>, <dc>, <comando>, <comandos>, <dc_v>, <mais_dc>,
 ```
 ### Simbolos terminais
 ```
-T = {ident, numero_int, numero_real, program, procedure, if, then, while, do, write,
+T = {var, ident, numero_int, numero_real, program, procedure, if, then, while, do, write,
 read, else, begin, end, integer, real, (, ), *, /, +, -, >, <, =, $, ;, :, ,, ., <>, >=, <=, := }
 
-Palavras reservadas: { program, procedure, if, then, while, do, write, read, else, begin, end, integer, real }
+Palavras reservadas: { program, var, procedure, if, then, while, do, write, read, else, begin, end, integer, real }
 Simbolos simples: { (, ), *, /, +, -, >, <, =, $, ;, :, ,, . }
 Simbolos duplos: { <>, >=, <=, := }
 Números inteiros: (0..9)+
@@ -80,4 +80,10 @@ P = {
       
 * Palavras reservadas – são os tokens usados para fins específicos, ou seja, que são previamente definidos na linguagem.
 * Símbolos simples e duplos – são aqueles também definidos na linguagem (<, $, >, etc. como exemplo de simples, e := como exemplo de duplo).
+
+## Screenshots
+<figure>
+  <img src="https://raw.githubusercontent.com/Johnataa/simple-compiler-2.0/master/SimpleCompiler/SimpleCompilerPresentation/interface.png" width="80%" height="80%" title="Interface Gráfica"/>
+  <figcaption>Interface Gráfica</figcaption>
+</figure>
 
