@@ -31,9 +31,10 @@ namespace SimpleCompilerPresentation
                 var result = MessageBox.Show("A análise encontrou erros léxicos!\nDeseja ver os erros?", "Erro Léxico!", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
                 if (result == MessageBoxResult.Yes)
                 {
-                    foreach (var item in Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO))
+                    var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO);
+                    foreach (var item in erros.Select((token, i) => new { i, token }))
                     {
-                        MessageBox.Show(item.ToString(), "Token");
+                        MessageBox.Show(item.token.ToString(), "Token - " + (item.i + 1) + "/" + erros.Count());
                     }
                 }
             }
@@ -176,7 +177,11 @@ namespace SimpleCompilerPresentation
                 texto += line + "\n";
                 block = block.NextBlock;
             }
-            return texto.Remove(texto.Length-1);
+            if (texto != "")
+            {
+                texto = texto.Remove(texto.Length - 1);
+            }
+            return texto;
         }
 
         private void ModifyTextIcon(string icon)

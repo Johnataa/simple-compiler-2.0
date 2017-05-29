@@ -173,38 +173,51 @@ namespace SimpleCompilerService.Analisador
             #region 3.2 Constrói Tokens Numéricos
             if (Char.IsDigit((char)Peek))
             {
+                #region 3.2.1 Constrói Número Inteiro
                 int v = 0;
                 do
                 {
                     v = 10 * v + int.Parse(Peek.ToString());
                     NextChar();
                 } while (Peek != null && Char.IsDigit((char)Peek));
+
+                if (Peek != null && Char.IsLetter((char)Peek)) //exemplo do caso: 31gf5r61v
+                {
+                    ContemErroLexico = true;
+                    return new Token(BuildStringLexeme(v.ToString()), Tag.ERRO_LEXICO, Linha);
+                }
+
                 if (Peek != '.')
                 {
                     return new Token(v, Tag.NUMERO_INTEIRO, Linha);
                 }
+                #endregion
+
+                #region 3.2.2 Constrói Número Real                
+                NextChar();
                 float x = v;
                 float d = 10;
-                do
+                while(Peek != null && Char.IsDigit((char)Peek))
                 {
                     x = x + float.Parse(Peek.ToString()) / d;
                     d = d * 10;
                     NextChar();
-                } while (Peek != null && Char.IsDigit((char) Peek));
+                }
+
+                if (Peek != null && Char.IsLetter((char)Peek)) //exemplo do caso: 31.gf5r61v
+                {
+                    ContemErroLexico = true;
+                    return new Token(BuildStringLexeme(x.ToString()), Tag.ERRO_LEXICO, Linha);
+                }
                 return new Token(x, Tag.NUMERO_REAL, Linha);
+                #endregion
             }
             #endregion
 
             #region 3.3 Constói Tokens de Palavras Reservadas e Identificadores
             if (Char.IsLetter((char)Peek))
             {
-                StringBuilder sb = new StringBuilder();
-                do
-                {
-                    sb.Append(Peek);
-                    NextChar();
-                } while (Peek != null && Char.IsLetterOrDigit((char)Peek));
-                string lexema = sb.ToString();
+                string lexema = BuildStringLexeme();
                 if (IsReservedWord(lexema))
                 {
                     return new Token(lexema, Tag.PALAVRA_RESERVADA, Linha);
@@ -215,6 +228,17 @@ namespace SimpleCompilerService.Analisador
 
             ContemErroLexico = true;
             return new Token(Peek, Tag.ERRO_LEXICO, Linha);
+        }
+
+        private static string BuildStringLexeme(string start = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            do
+            {
+                sb.Append(Peek);
+                NextChar();
+            } while (Peek != null && Char.IsLetterOrDigit((char)Peek));
+            return start + sb.ToString();
         }
 
         private static void NextChar()
