@@ -1,20 +1,19 @@
 ﻿using SimpleCompilerService.Suporte;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleCompilerService.Analisador
 {
     public class Lexico
     {
-        #region 1. Propriedades e Cosntrutores
+        #region 1. Propriedades e Construtores
         private static Queue<char> Texto;
         public static Queue<Token> Tokens;
         public static bool ContemErroLexico { get; set; }
-        private static Char? Peek;
+        private static char Peek { get; set; }
+
         private static int Linha;
 
         private Lexico() { }
@@ -28,65 +27,204 @@ namespace SimpleCompilerService.Analisador
             Tokens = new Queue<Token>();
             ContemErroLexico = false;
             Linha = 1;
-            Token t;
-            NextChar();
+            Token t = null;
+            Peek = NextChar();
             #endregion
-            while (Peek != null)
+
+            while (Texto.Any())
             {
-                #region 2.2 Tratamento de quebra de linhas, comentários, espaços e tabulações
+                #region 2.2 Simbolos simples, duplos, comentários, quebra de linhas e tabulações
                 if (Peek == '\n')
                 {
                     Linha++;
-                    NextChar();
-                    continue;
-                }
-                else if (Peek == '{')
-                {
-                    while (Peek != null)
-                    {
-                        NextChar();
-                        if (Peek == '}')
-                        {
-                            break;
-                        }
-                    }
-                    NextChar();
-                    continue;
-                }
-                else if (Peek == '/' && NextCharIs('*'))
-                {
-                    NextChar(); NextChar();
-                    while (Peek != null)
-                    {
-                        NextChar();
-                        if (Peek == '*' && NextCharIs('/'))
-                        {
-                            NextChar();
-                            break;
-                        }
-                    }
-                    NextChar();
+                    Peek = NextChar();
                     continue;
                 }
                 else if (Peek == ' ' || Peek == '\t' || Peek == '\r')
                 {
-                    NextChar();
+                    Peek = NextChar();
                     continue;
+                }
+                else if (Peek == '.' || Peek == ',' || Peek == '(' || Peek == ')' || Peek == ';' || Peek == '=')
+                {
+                    t = new Token(Peek, Tag.SIMBOLO_SIMPLES, Linha);
+                    Peek = NextChar();
+                }
+                else if (Peek == '+' || Peek == '-' || Peek == '*')
+                {
+                    t = new Token(Peek, Tag.OPERADOR, Linha);
+                    Peek = NextChar();
+                }
+                else if (Peek == '/')
+                {
+                    Peek = NextChar();
+                    if (Peek == '*')
+                    {
+                        while (Texto.Any())
+                        {
+                            Peek = NextChar();
+                            if (Peek == '*')
+                            {
+                                Peek = NextChar();
+                                if (Peek == '/')
+                                {
+                                    Peek = NextChar();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        t = new Token(Peek, Tag.OPERADOR, Linha);
+                    }
+                }
+                else if (Peek == '{')
+                {
+                    
+                    while (Texto.Any())
+                    {
+                        Peek = NextChar();
+                        if (Peek == '}')
+                        {
+                            Peek = NextChar();
+                            break;
+                        }
+                    }
+                }
+                else if (Peek == ':')
+                {
+                    Peek = NextChar();
+                    if (Peek == '=')
+                    {
+                        Peek = NextChar();
+                        t = new Token(":=", Tag.SIMBOLO_DUPLO, Linha);
+                    }
+                    else
+                    {
+                        t = new Token(":", Tag.SIMBOLO_SIMPLES, Linha);
+                    }
+                }
+                else if (Peek == '>')
+                {
+                    Peek = NextChar();
+                    if (Peek == '=')
+                    {
+                        NextChar();
+                        t = new Token(">=", Tag.SIMBOLO_DUPLO, Linha);
+                    }
+                    else
+                    {
+                        t = new Token('>', Tag.SIMBOLO_SIMPLES, Linha);
+                    }
+                }
+                else if (Peek == '<')
+                {
+                    Peek = NextChar();
+                    if (Peek == '=')
+                    {
+                        NextChar();
+                        t = new Token("<=", Tag.SIMBOLO_DUPLO, Linha);
+
+                    }
+                    else if (Peek == '>')
+                    {
+                        NextChar();
+                        t = new Token("<>", Tag.SIMBOLO_DUPLO, Linha);
+                    }
+                    else
+                    {
+                        t= new Token('<', Tag.SIMBOLO_SIMPLES, Linha);
+                    }
+                }
+                else if(!Char.IsLetterOrDigit(Peek))
+                {
+                    ContemErroLexico = true;
+                    t = new Token(Peek, Tag.ERRO_LEXICO, Linha);
+                }
+                if(t != null)
+                {
+                    Tokens.Enqueue(t);
+                    t = null;
+                }
+                
+                #endregion
+
+                #region 2.3 Tokens Numéricos
+                if (Char.IsDigit(Peek))
+                {
+                    int v = 0;
+                    do
+                    {
+                        v = 10 * v + int.Parse(Peek.ToString());
+                        Peek = NextChar();
+                        if (!Char.IsDigit(Peek))
+                        {
+                            break;
+                        }
+                    } while (Tokens.Any());
+
+                    if (Peek != '.')
+                    {
+                        t = new Token(v, Tag.NUMERO_INTEIRO, Linha);
+                    }
+                    else
+                    {
+                        Peek = NextChar();
+                        if (Char.IsDigit(Peek))
+                        {
+                            float x = v;
+                            float d = 10;
+                            do
+                            {
+                                x = x + float.Parse(Peek.ToString()) / d;
+                                d = d * 10;
+                                Peek = NextChar();
+                                if (!Char.IsDigit(Peek))
+                                {
+                                    break;
+                                }
+                            } while (Tokens.Any());
+                            t = new Token(x, Tag.NUMERO_REAL, Linha);
+                        }
+                        else
+                        {
+                            ContemErroLexico = true;
+                            t = new Token(BuildStringLexeme(v.ToString() + '.'), Tag.ERRO_LEXICO, Linha);
+                        }
+                        
+                    }                    
+                }
+                if (t != null)
+                {
+                    Tokens.Enqueue(t);
+                    t = null;
                 }
                 #endregion
 
-                #region 2.3 Constrói fila de Tokens
-                t = BuildToken();
-                Tokens.Enqueue(t);
-                if (t.Tag == Tag.OPERADOR || t.Tag == Tag.SIMBOLO_DUPLO || t.Tag == Tag.SIMBOLO_SIMPLES || t.Tag == Tag.ERRO_LEXICO)
+                #region 2.3 Tokens de Palavras Reservadas e Identificadores
+                if (Char.IsLetter(Peek))
                 {
-                    NextChar();
+                    string lexema = BuildStringLexeme();
+                    if (IsReservedWord(lexema))
+                    {
+                        t = new Token(lexema, Tag.PALAVRA_RESERVADA, Linha);
+                    }
+                    else
+                    {
+                        t = new Token(lexema, Tag.IDENTIFICADOR, Linha);
+                    }
+                }
+                if (t != null)
+                {
+                    Tokens.Enqueue(t);
+                    t = null;
                 }
                 #endregion
             }
         }
 
-        public static Token ProximoToken()
+        public static Token NextToken()
         {
             if (Tokens != null && Tokens.Any())
             {
@@ -94,174 +232,27 @@ namespace SimpleCompilerService.Analisador
             }
             return null;
         }
-
-        public static bool ProximoTokenEh(string lexema)
-        {
-            if (Tokens != null && Tokens.Any())
-            {
-                return Tokens.Peek().Lexema.ToString() == lexema;
-            }
-            return false;
-        }
         #endregion
 
         #region 3. Métodos Privados
-        private static Token BuildToken()
-        {
-            #region 3.1 Constrói Tokens de Simbolos Simples e Duplos
-            switch (Peek)
-            {
-                case '.':
-                    return new Token('.', Tag.SIMBOLO_SIMPLES, Linha);
-                case ',':
-                    return new Token(',', Tag.SIMBOLO_SIMPLES, Linha);
-                case '(':
-                    return new Token('(', Tag.SIMBOLO_SIMPLES, Linha);
-                case ')':
-                    return new Token(')', Tag.SIMBOLO_SIMPLES, Linha);
-                case ';':
-                    return new Token(';', Tag.SIMBOLO_SIMPLES, Linha);
-                case '=':
-                    return new Token('=', Tag.SIMBOLO_SIMPLES, Linha);
-                case '+':
-                    return new Token('+', Tag.OPERADOR, Linha);
-                case '-':
-                    return new Token('-', Tag.OPERADOR, Linha);
-                case '*':
-                    return new Token('*', Tag.OPERADOR, Linha);
-                case '/':
-                    return new Token('/', Tag.OPERADOR, Linha);
-                case ':':
-                    if (NextCharIs('='))
-                    {
-                        NextChar();
-                        return new Token(":=", Tag.SIMBOLO_DUPLO, Linha);
-                    }
-                    else
-                    {
-                        return new Token(':', Tag.SIMBOLO_SIMPLES, Linha);
-                    }
-                case '>':
-                    if (NextCharIs('='))
-                    {
-                        NextChar();
-                        return new Token(">=", Tag.SIMBOLO_DUPLO, Linha);
-                    }
-                    else
-                    {
-                        return new Token('>', Tag.SIMBOLO_SIMPLES, Linha);
-                    }
-                case '<':
-                    if (NextCharIs('='))
-                    {
-                        NextChar();
-                        return new Token("<=", Tag.SIMBOLO_DUPLO, Linha);
-                            
-                    }
-                    else if (NextCharIs('>'))
-                    {
-                        NextChar();
-                        return new Token("<>", Tag.SIMBOLO_DUPLO, Linha);
-                    }
-                    else
-                    {
-                        return new Token('<', Tag.SIMBOLO_SIMPLES, Linha);
-                    }
-            }
-            #endregion
-
-            #region 3.2 Constrói Tokens Numéricos
-            if (Char.IsDigit((char)Peek))
-            {
-                #region 3.2.1 Constrói Número Inteiro
-                int v = 0;
-                do
-                {
-                    v = 10 * v + int.Parse(Peek.ToString());
-                    NextChar();
-                } while (Peek != null && Char.IsDigit((char)Peek));
-
-                if (Peek != null && Char.IsLetter((char)Peek)) //exemplo do caso: 31gf5r61v
-                {
-                    ContemErroLexico = true;
-                    return new Token(BuildStringLexeme(v.ToString()), Tag.ERRO_LEXICO, Linha);
-                }
-
-                if (Peek != '.')
-                {
-                    return new Token(v, Tag.NUMERO_INTEIRO, Linha);
-                }
-                #endregion
-
-                #region 3.2.2 Constrói Número Real                
-                NextChar();
-                float x = v;
-                float d = 10;
-                while(Peek != null && Char.IsDigit((char)Peek))
-                {
-                    x = x + float.Parse(Peek.ToString()) / d;
-                    d = d * 10;
-                    NextChar();
-                }
-
-                if (Peek != null && Char.IsLetter((char)Peek)) //exemplo do caso: 31.gf5r61v
-                {
-                    ContemErroLexico = true;
-                    return new Token(BuildStringLexeme(x.ToString()), Tag.ERRO_LEXICO, Linha);
-                }
-                return new Token(x, Tag.NUMERO_REAL, Linha);
-                #endregion
-            }
-            #endregion
-
-            #region 3.3 Constói Tokens de Palavras Reservadas e Identificadores
-            if (Char.IsLetter((char)Peek))
-            {
-                string lexema = BuildStringLexeme();
-                if (IsReservedWord(lexema))
-                {
-                    return new Token(lexema, Tag.PALAVRA_RESERVADA, Linha);
-                }
-                return new Token(lexema, Tag.IDENTIFICADOR, Linha);
-            }
-            #endregion
-
-            ContemErroLexico = true;
-            return new Token(Peek, Tag.ERRO_LEXICO, Linha);
-        }
-
         private static string BuildStringLexeme(string start = "")
         {
             StringBuilder sb = new StringBuilder();
             do
             {
                 sb.Append(Peek);
-                NextChar();
-            } while (Peek != null && Char.IsLetterOrDigit((char)Peek));
+                Peek = NextChar();
+                if (!Char.IsLetterOrDigit(Peek))
+                {
+                    break;
+                }
+            } while (Texto.Any());
             return start + sb.ToString();
         }
 
-        private static void NextChar()
+        private static char NextChar()
         {
-            if (Texto.Any())
-            {
-                Peek = Texto.Dequeue();
-            }
-            else
-            {
-                Peek = null;
-            }
-        }
-
-        private static bool NextCharIs(char c)
-        {
-            char b = Texto.Peek();
-            if (b != c)
-            {
-                return false;
-            }
-            Peek = ' ';
-            return true;
+            return Texto.Dequeue();
         }
 
         private static Queue<char> ParseToCharQueue(string str)
