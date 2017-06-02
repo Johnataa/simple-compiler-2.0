@@ -141,13 +141,13 @@ namespace SimpleCompilerService.Analisador
                 {
                     ContemErroLexico = true;
                     t = new Token(Peek, Tag.ERRO_LEXICO, Linha);
+                    Peek = NextChar();
                 }
                 if(t != null)
                 {
                     Tokens.Enqueue(t);
                     t = null;
                 }
-                
                 #endregion
 
                 #region 2.3 Tokens Numéricos
