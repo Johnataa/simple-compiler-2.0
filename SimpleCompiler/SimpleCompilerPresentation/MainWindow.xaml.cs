@@ -1,6 +1,9 @@
 ﻿using Microsoft.Win32;
 using SimpleCompilerService.Analisador;
+using SimpleCompilerService.Suporte;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -14,6 +17,7 @@ namespace SimpleCompilerPresentation
     /// </summary>
     public partial class MainWindow : Window
     {
+        private string TempFilePath;
         private string FilePath;
         public MainWindow()
         {
@@ -24,23 +28,30 @@ namespace SimpleCompilerPresentation
         #region 1. Interações com a Tela
         private void BtnCompilar_Click(object sender, RoutedEventArgs e)
         {
-            var teste = new TextRange(CodigoFonte.Document.ContentStart, CodigoFonte.Document.ContentEnd).Text;
-            Lexico.ScanText(teste);
+            var sourceCode = new TextRange(CodigoFonte.Document.ContentStart, CodigoFonte.Document.ContentEnd).Text;
+            if (sourceCode == "" || sourceCode == "\r\n")
+            {
+                MessageBox.Show("Não há nada para ser compilado!\nPor favor digite um código fonte.", "Atenção!", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            Lexico.ScanText(sourceCode);
             if (Lexico.ContemErroLexico)
             {
-                var result = MessageBox.Show("A análise encontrou erros léxicos!\nDeseja ver os erros?", "Erro Léxico!", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+                var result = MessageBox.Show("A análise encontrou erros léxicos!\nDeseja ver os erros?", "Erro Léxico!", MessageBoxButton.YesNo, MessageBoxImage.Hand, MessageBoxResult.Yes);
                 if (result == MessageBoxResult.Yes)
                 {
-                    var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO);
-                    foreach (var item in erros.Select((token, i) => new { i, token }))
-                    {
-                        MessageBox.Show(item.token.ToString(), "Token - " + (item.i + 1) + "/" + erros.Count());
-                    }
+                    var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO).ToList();
+                    OpenNotepad(erros);
                 }
             }
             else
             {
-                MessageBox.Show("Sucesso na análise Léxica!", "Sucesso!");
+                var result = MessageBox.Show("Sucesso na análise léxica!\nDeseja ver os Tokens?", "Sucesso!", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+                if (result == MessageBoxResult.Yes)
+                {
+                    OpenNotepad(Lexico.Tokens.ToList());
+                }
             }
         }
 
@@ -88,7 +99,7 @@ namespace SimpleCompilerPresentation
             {
                 BtnSalvarComo_Click(sender, e);
             }
-            
+
         }
 
         private void BtnSalvarComo_Click(object sender, RoutedEventArgs e)
@@ -201,6 +212,21 @@ namespace SimpleCompilerPresentation
         {
             Filename.Visibility = Visibility.Visible;
             Filename.Text = Path.GetFileName(FilePath);
+        }
+
+        private void OpenNotepad(List<Token> content)
+        {
+            string text = "";
+            foreach (var item in content.Select((token, i) => new { i, token }))
+            {
+                text += "Token: " + (item.i + 1) + "/" + content.Count() + "\r\n" + item.token.ToString() + "\r\n\r\n";
+            }
+            TempFilePath = Path.GetTempPath() + "TokensTemp.txt";
+            StreamWriter file = new StreamWriter(TempFilePath);
+            file.WriteLine(text);
+            file.Close();
+
+            Process.Start(TempFilePath);                    
         }
         #endregion
 
