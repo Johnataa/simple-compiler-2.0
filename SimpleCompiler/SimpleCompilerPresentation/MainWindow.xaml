@@ -75,17 +75,17 @@
                                  HorizontalAlignment="Right"
                                  Grid.Column="1" Grid.Row="2" Margin="0 0 15 0">
             <StackPanel>
-                <Button x:Name="BtnAbrir" ToolTip="Abrir" Click="BtnAbrir_Click"
+                <Button x:Name="BtnAbrir" ToolTip="Abrir (Ctrl+O)" Click="BtnAbrir_Click"
                         Background="{DynamicResource PrimaryHueMidBrush}"
                         Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
                     <materialDesign:PackIcon Kind="OpenInApp" />
                 </Button>
-                <Button x:Name="BtnSalvar" ToolTip="Salvar" Click="BtnSalvar_Click"
+                <Button x:Name="BtnSalvar" ToolTip="Salvar (Ctrl+S)" Click="BtnSalvar_Click"
                         Background="{DynamicResource SecondaryAccentBrush}"
                         Foreground="{DynamicResource SecondaryAccentForegroundBrush}">
                     <materialDesign:PackIcon Kind="ContentSave" />
                 </Button>
-                <Button x:Name="BtnSalvarComo" ToolTip="Salvar Como" Click="BtnSalvarComo_Click"
+                <Button x:Name="BtnSalvarComo" ToolTip="Salvar Como (Ctrl+Shift+S)" Click="BtnSalvarComo_Click"
                         Background="Aqua" BorderBrush="AliceBlue">
                     <materialDesign:PackIcon Kind="ContentSaveAll" />
                 </Button>
