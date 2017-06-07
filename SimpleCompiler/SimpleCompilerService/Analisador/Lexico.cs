@@ -62,34 +62,59 @@ namespace SimpleCompilerService.Analisador
                     {
                         while (Texto.Any())
                         {
+                            var linha = 0;
                             Peek = NextChar();
+                            if (Peek == '\n')
+                            {
+                                linha++;
+                                Peek = NextChar();
+                                continue;
+                            }
                             if (Peek == '*')
                             {
                                 Peek = NextChar();
                                 if (Peek == '/')
                                 {
                                     Peek = NextChar();
+                                    Linha += linha;
                                     break;
                                 }
                             }
                         }
+                        if (!Texto.Any())
+                        {
+                            ContemErroLexico = true;
+                            t = new Token("Comentário mal formado!", Tag.ERRO_LEXICO, Linha);
+                        }
                     }
                     else
                     {
-                        t = new Token(Peek, Tag.OPERADOR, Linha);
+                        t = new Token('/', Tag.OPERADOR, Linha);
                     }
                 }
                 else if (Peek == '{')
                 {
-                    
                     while (Texto.Any())
                     {
+                        var linha = 0;
                         Peek = NextChar();
+                        if (Peek == '\n')
+                        {
+                            linha++;
+                            Peek = NextChar();
+                            continue;
+                        }
                         if (Peek == '}')
                         {
                             Peek = NextChar();
+                            Linha += linha;
                             break;
                         }
+                    }
+                    if (!Texto.Any())
+                    {
+                        ContemErroLexico = true;
+                        t = new Token("Comentário mal formado!", Tag.ERRO_LEXICO, Linha);
                     }
                 }
                 else if (Peek == ':')
@@ -190,10 +215,9 @@ namespace SimpleCompilerService.Analisador
                         else
                         {
                             ContemErroLexico = true;
-                            t = new Token(BuildStringLexeme(v.ToString() + '.'), Tag.ERRO_LEXICO, Linha);
+                            t = new Token(v.ToString() + '.', Tag.ERRO_LEXICO, Linha);
                         }
-                        
-                    }                    
+                    }
                 }
                 if (t != null)
                 {
