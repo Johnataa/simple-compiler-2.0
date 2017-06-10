@@ -47,11 +47,12 @@ namespace SimpleCompilerPresentation
             }
             else
             {
-                var result = MessageBox.Show("Sucesso na análise léxica!\nDeseja ver os Tokens?", "Sucesso!", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
-                if (result == MessageBoxResult.Yes)
-                {
-                    OpenNotepad(Lexico.Tokens.ToList());
-                }
+                Sintatico.Analyze();
+                //var result = MessageBox.Show("Sucesso na análise léxica!\nDeseja ver os Tokens?", "Sucesso!", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+                //if (result == MessageBoxResult.Yes)
+                //{
+                //    OpenNotepad(Lexico.Tokens.ToList());
+                //}
             }
         }
 

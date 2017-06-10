@@ -8,15 +8,13 @@ namespace SimpleCompilerService.Analisador
 {
     public class Lexico
     {
-        #region 1. Propriedades e Construtores
+        #region 1. Propriedades
         private static Queue<char> Texto;
-        public static Queue<Token> Tokens;
+        public static Queue<Token> Tokens { get; set; }
         public static bool ContemErroLexico { get; set; }
-        private static char Peek { get; set; }
+        private static char Peek;
 
         private static int Linha;
-
-        private Lexico() { }
         #endregion
 
         #region 2. Métodos Públicos 
@@ -255,6 +253,15 @@ namespace SimpleCompilerService.Analisador
                 return Tokens.Dequeue();
             }
             return null;
+        }
+
+        public static bool NextTokenIs(object obj)
+        {
+            if (Tokens != null && Tokens.Any())
+            {
+                return Tokens.Peek().Equals(obj);
+            }
+            return false;
         }
         #endregion
 

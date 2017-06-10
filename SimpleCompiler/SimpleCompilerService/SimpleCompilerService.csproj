@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analisador\Lexico.cs" />
+    <Compile Include="Analisador\Sintatico.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Suporte\Tag.cs" />
     <Compile Include="Suporte\Token.cs" />
