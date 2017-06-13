@@ -38,7 +38,7 @@ namespace SimpleCompilerPresentation
             Lexico.ScanText(sourceCode);
             if (Lexico.ContemErroLexico)
             {
-                var result = MessageBox.Show("A análise encontrou erros léxicos!\nDeseja ver os erros?", "Erro Léxico!", MessageBoxButton.YesNo, MessageBoxImage.Hand, MessageBoxResult.Yes);
+                var result = MessageBox.Show("O compilador encontrou erros léxicos!\nDeseja ver os erros?", "Erro Léxico!", MessageBoxButton.YesNo, MessageBoxImage.Hand, MessageBoxResult.Yes);
                 if (result == MessageBoxResult.Yes)
                 {
                     var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO).ToList();
@@ -48,11 +48,18 @@ namespace SimpleCompilerPresentation
             else
             {
                 Sintatico.Analyze();
-                //var result = MessageBox.Show("Sucesso na análise léxica!\nDeseja ver os Tokens?", "Sucesso!", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
-                //if (result == MessageBoxResult.Yes)
-                //{
-                //    OpenNotepad(Lexico.Tokens.ToList());
-                //}
+                if (Sintatico.Erros.Any())
+                {
+                    var result = MessageBox.Show("O compilador encontrou erros sintáticos!\nDeseja ver os erros?", "Erro Sintático!", MessageBoxButton.YesNo, MessageBoxImage.Hand, MessageBoxResult.Yes);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        OpenNotepad(Sintatico.Erros);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Suceso nas análises léxica e sintática!", "Sucesso!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
 
@@ -228,6 +235,21 @@ namespace SimpleCompilerPresentation
             file.Close();
 
             Process.Start(TempFilePath);                    
+        }
+
+        private void OpenNotepad(Dictionary<Token, object> content)
+        {
+            string text = "";
+            foreach (var item in content)
+            {
+                text += "Esperado: " + item.Value + "\r\nEncontrado: " + item.Key.Lexema + "\r\nLinha:" + item.Key.Linha + "\r\n\r\n";
+            }
+            TempFilePath = Path.GetTempPath() + "TokensTemp.txt";
+            StreamWriter file = new StreamWriter(TempFilePath);
+            file.WriteLine(text);
+            file.Close();
+
+            Process.Start(TempFilePath);
         }
         #endregion
 

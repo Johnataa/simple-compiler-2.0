@@ -43,7 +43,7 @@ namespace SimpleCompilerService.Analisador
                     Peek = NextChar();
                     continue;
                 }
-                else if (Peek == '.' || Peek == ',' || Peek == '(' || Peek == ')' || Peek == ';' || Peek == '=')
+                else if (Peek == '.' || Peek == ',' || Peek == '(' || Peek == ')' || Peek == ';' || Peek == '=' || Peek == '$')
                 {
                     t = new Token(Peek, Tag.SIMBOLO_SIMPLES, Linha);
                     Peek = NextChar();
@@ -125,7 +125,7 @@ namespace SimpleCompilerService.Analisador
                     }
                     else
                     {
-                        t = new Token(":", Tag.SIMBOLO_SIMPLES, Linha);
+                        t = new Token(':', Tag.SIMBOLO_SIMPLES, Linha);
                     }
                 }
                 else if (Peek == '>')
@@ -133,7 +133,7 @@ namespace SimpleCompilerService.Analisador
                     Peek = NextChar();
                     if (Peek == '=')
                     {
-                        NextChar();
+                        Peek = NextChar();
                         t = new Token(">=", Tag.SIMBOLO_DUPLO, Linha);
                     }
                     else
@@ -146,13 +146,13 @@ namespace SimpleCompilerService.Analisador
                     Peek = NextChar();
                     if (Peek == '=')
                     {
-                        NextChar();
+                        Peek = NextChar();
                         t = new Token("<=", Tag.SIMBOLO_DUPLO, Linha);
 
                     }
                     else if (Peek == '>')
                     {
-                        NextChar();
+                        Peek = NextChar();
                         t = new Token("<>", Tag.SIMBOLO_DUPLO, Linha);
                     }
                     else

@@ -1,5 +1,4 @@
 ﻿using SimpleCompilerService.Suporte;
-using System;
 using System.Collections.Generic;
 
 namespace SimpleCompilerService.Analisador
@@ -8,13 +7,13 @@ namespace SimpleCompilerService.Analisador
     {
         #region 1. Propriedades
         private static Token CurrentToken;
-        public static Dictionary<object, Token> Erros { get; set; }
+        public static Dictionary<Token, object> Erros { get; set; }
         #endregion
 
         #region 2. Métodos Públicos
         public static void Analyze()
         {
-            Erros = new Dictionary<object, Token>();
+            Erros = new Dictionary<Token, object>();
             Programa();
         }
 
@@ -130,6 +129,7 @@ namespace SimpleCompilerService.Analisador
         {
             if (Lexico.NextTokenIs(';'))
             {
+                CurrentToken = Lexico.NextToken();
                 Argumentos();
             }
         }
@@ -149,9 +149,12 @@ namespace SimpleCompilerService.Analisador
 
         private static void Mais_fatores()
         {
-            Op_mul();
-            Fator();
-            Mais_fatores();
+            if (Lexico.NextTokenIs('*') || Lexico.NextTokenIs('/'))
+            {
+                Op_mul();
+                Fator();
+                Mais_fatores();
+            }            
         }
 
         private static void Op_mul()
@@ -225,8 +228,8 @@ namespace SimpleCompilerService.Analisador
             }
             else if (Lexico.NextTokenIs("procedure"))
             {
-                CurrentToken = Lexico.NextToken();
                 Dc_p();
+                Mais_dc();
             }
         }
 
@@ -263,8 +266,9 @@ namespace SimpleCompilerService.Analisador
 
         private static void Mais_dcloc()
         {
-            if (Lexico.NextTokenIs(':'))
+            if (Lexico.NextTokenIs(';'))
             {
+                CurrentToken = Lexico.NextToken();
                 Dc_loc();
             }
         }
@@ -273,6 +277,7 @@ namespace SimpleCompilerService.Analisador
         {
             if (Lexico.NextTokenIs('('))
             {
+                CurrentToken = Lexico.NextToken();
                 Lista_par();
                 CurrentTokenIs(')');
             }
@@ -292,14 +297,16 @@ namespace SimpleCompilerService.Analisador
         {
             if (Lexico.NextTokenIs(';'))
             {
+                CurrentToken = Lexico.NextToken();
                 Lista_par();
             }
         }
 
         private static void Mais_dc()
         {
-            if (Lexico.NextTokenIs(":"))
+            if (Lexico.NextTokenIs(';'))
             {
+                CurrentToken = Lexico.NextToken();
                 Dc();
             }
         }
@@ -309,7 +316,7 @@ namespace SimpleCompilerService.Analisador
             if (CurrentTokenIs("var"))
             {
                 Variaveis();
-                if (CurrentTokenIs(":"))
+                if (CurrentTokenIs(':'))
                 {
                     Tipo_var();
                 }
@@ -369,7 +376,7 @@ namespace SimpleCompilerService.Analisador
 
         private static void Error(object expected)
         {
-            Erros.Add(expected, CurrentToken);
+            Erros.Add(CurrentToken, expected);
         }
         #endregion
     }
