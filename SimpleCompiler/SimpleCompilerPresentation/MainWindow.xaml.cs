@@ -3,7 +3,6 @@ using SimpleCompilerService.Analisador;
 using SimpleCompilerService.Suporte;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -17,7 +16,6 @@ namespace SimpleCompilerPresentation
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string TempFilePath;
         private string FilePath;
         public MainWindow()
         {
@@ -38,27 +36,24 @@ namespace SimpleCompilerPresentation
             Lexico.ScanText(sourceCode);
             if (Lexico.ContemErroLexico)
             {
-                var result = MessageBox.Show("O compilador encontrou erros léxicos!\nDeseja ver os erros?", "Erro Léxico!", MessageBoxButton.YesNo, MessageBoxImage.Hand, MessageBoxResult.Yes);
-                if (result == MessageBoxResult.Yes)
-                {
-                    var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO).ToList();
-                    OpenNotepad(erros);
-                }
+                var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO).ToList();
+                Console.Text = ErroLexico(erros);
             }
             else
             {
                 Sintatico.Analyze();
                 if (Sintatico.Erros.Any())
                 {
-                    var result = MessageBox.Show("O compilador encontrou erros sintáticos!\nDeseja ver os erros?", "Erro Sintático!", MessageBoxButton.YesNo, MessageBoxImage.Hand, MessageBoxResult.Yes);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        OpenNotepad(Sintatico.Erros);
-                    }
+                    Console.Text = ErroSintatico(Sintatico.Erros);
+                }
+                else if (Sintatico.ErrosSemanticos.Any())
+                {
+                    Console.Text = ErroSemantico(Sintatico.ErrosSemanticos);
                 }
                 else
                 {
-                    MessageBox.Show("Suceso nas análises léxica e sintática!", "Sucesso!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    var sucesso = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✓";
+                    Console.Text = sucesso;
                 }
             }
         }
@@ -149,6 +144,11 @@ namespace SimpleCompilerPresentation
         {
             BtnSalvarComo_Click(sender, e);
         }
+
+        private void Executed_Compile(object sender, ExecutedRoutedEventArgs e)
+        {
+            BtnCompilar_Click(sender, e);
+        }
         #endregion
 
         #region 3. Métodos privados
@@ -222,34 +222,34 @@ namespace SimpleCompilerPresentation
             Filename.Text = Path.GetFileName(FilePath);
         }
 
-        private void OpenNotepad(List<Token> content)
+        private string ErroLexico(List<Token> content)
         {
-            string text = "";
-            foreach (var item in content.Select((token, i) => new { i, token }))
+            string text = "Análise Léxica ✗:\r\n\r\n";
+            foreach (var item in content)
             {
-                text += "Token: " + (item.i + 1) + "/" + content.Count() + "\r\n" + item.token.ToString() + "\r\n\r\n";
+                text += "Lexema: '" + item.Lexema + "'\r\nLinha: " + item.Linha + "\r\n\r\n";
             }
-            TempFilePath = Path.GetTempPath() + "TokensTemp.txt";
-            StreamWriter file = new StreamWriter(TempFilePath);
-            file.WriteLine(text);
-            file.Close();
-
-            Process.Start(TempFilePath);                    
+            return text;
         }
 
-        private void OpenNotepad(Dictionary<Token, object> content)
+        private string ErroSemantico(List<Simbolo> content)
         {
-            string text = "";
+            string text = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✗:\r\n\r\n";
+            foreach (var item in content)
+            {
+                text += "Variável '" + item.Cadeia + "' já declarada na linha " + item.Token.Linha + ".\r\n\r\n";
+            }
+            return text;
+        }
+
+        private string ErroSintatico(Dictionary<Token, object> content)
+        {
+            string text = "Análise Léxica ✓\r\nAnálise Sintática ✗:\r\n\r\n";
             foreach (var item in content)
             {
                 text += "Esperado: " + item.Value + "\r\nEncontrado: " + item.Key.Lexema + "\r\nLinha:" + item.Key.Linha + "\r\n\r\n";
             }
-            TempFilePath = Path.GetTempPath() + "TokensTemp.txt";
-            StreamWriter file = new StreamWriter(TempFilePath);
-            file.WriteLine(text);
-            file.Close();
-
-            Process.Start(TempFilePath);
+            return text;
         }
         #endregion
 

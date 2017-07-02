@@ -8,12 +8,25 @@ namespace SimpleCompilerService.Analisador
         #region 1. Propriedades
         private static Token CurrentToken;
         public static Dictionary<Token, object> Erros { get; set; }
+
+        #region 1.1. Propriedades Semânticas
+        private static string Categoria;
+        private static TabelaDeSimbolos TabelaDeSimbolos;
+        private static Queue<Simbolo> FilaSimbolos;
+        private static bool IsProcedure;
+        public static List<Simbolo> ErrosSemanticos { get; set; }
+        #endregion
+
         #endregion
 
         #region 2. Métodos Públicos
         public static void Analyze()
         {
             Erros = new Dictionary<Token, object>();
+            ErrosSemanticos = new List<Simbolo>();
+            TabelaDeSimbolos = new TabelaDeSimbolos();
+            FilaSimbolos = new Queue<Simbolo>();
+            IsProcedure = false;
             Programa();
         }
 
@@ -236,11 +249,19 @@ namespace SimpleCompilerService.Analisador
         private static void Dc_p()
         {
             if (CurrentTokenIs("procedure"))
-            {                
+            {
+                Categoria = "params";
                 if (CurrentTokenIs(Tag.IDENTIFICADOR))
                 {
+                    var result = TabelaDeSimbolos.Insere(new Simbolo(CurrentToken, "procedure", null), IsProcedure);
+                    if (result != null)
+                    {
+                        Error(result);
+                    }
                     Parametros();
+                    IsProcedure = true;
                     Corpo_p();
+                    IsProcedure = false;
                 }
             }
         }
@@ -315,6 +336,7 @@ namespace SimpleCompilerService.Analisador
         {
             if (CurrentTokenIs("var"))
             {
+                Categoria = "var";
                 Variaveis();
                 if (CurrentTokenIs(':'))
                 {
@@ -326,12 +348,18 @@ namespace SimpleCompilerService.Analisador
         private static void Tipo_var()
         {
             CurrentTokenIs("real", "integer");
+            var result = TabelaDeSimbolos.Insere(ref FilaSimbolos, CurrentToken.Lexema.ToString(), IsProcedure);
+            if (result != null)
+            {
+                Error(result);
+            }
         }
 
         private static void Variaveis()
         {
             if (CurrentTokenIs(Tag.IDENTIFICADOR))
             {
+                FilaSimbolos.Enqueue(new Simbolo(CurrentToken, Categoria, null));
                 Mais_var();
             }
         }
@@ -377,6 +405,16 @@ namespace SimpleCompilerService.Analisador
         private static void Error(object expected)
         {
             Erros.Add(CurrentToken, expected);
+        }
+
+        private static void Error(Simbolo simbolo)
+        {
+            ErrosSemanticos.Add(simbolo);
+        }
+
+        private static void Error(List<Simbolo> simbolos)
+        {
+            ErrosSemanticos.AddRange(simbolos);
         }
         #endregion
     }

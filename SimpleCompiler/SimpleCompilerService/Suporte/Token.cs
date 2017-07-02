@@ -24,8 +24,8 @@ namespace SimpleCompilerService.Suporte
         }
         #endregion
 
-        #region 2. Métodos Privados
-        private string GetTagDescription()
+        #region 2. Métodos Públicos
+        public string GetTagDescription()
         {
             FieldInfo fi = Tag.GetType().GetField(Tag.ToString());
             DescriptionAttribute attr = Attribute.GetCustomAttribute(fi, typeof(DescriptionAttribute)) as DescriptionAttribute;
