@@ -52,7 +52,7 @@ namespace SimpleCompilerPresentation
                 }
                 else
                 {
-                    var sucesso = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✓";
+                    var sucesso = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✓\r\n\r\nHora: " + DateTime.Now.ToLongTimeString();
                     Console.Text = sucesso;
                 }
             }
