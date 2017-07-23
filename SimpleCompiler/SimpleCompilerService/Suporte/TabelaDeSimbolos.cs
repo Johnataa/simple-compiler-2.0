@@ -5,75 +5,81 @@ namespace SimpleCompilerService.Suporte
 {
     public class TabelaDeSimbolos
     {
-        public Dictionary<string, Simbolo> TabelaPrograma { get; set; }
-        public Dictionary<string, Simbolo> TabelaProcedimento { get; set; }
+        public Dictionary<string, Simbolo> Tabela { get; set; }
 
         public TabelaDeSimbolos()
         {
-            TabelaPrograma = new Dictionary<string, Simbolo>();
-            TabelaProcedimento = new Dictionary<string, Simbolo>();
+            Tabela = new Dictionary<string, Simbolo>();
         }
 
-        public Simbolo Busca(string SimboloId, bool isProcedure)
+        public Queue<Simbolo> BuscaParametros(Simbolo s)
         {
-            if (isProcedure)
+
+            var r = Tabela
+                .Select(p => p.Value)
+                .Where(p => p.Categoria == "param" && p.Escopo == s.Cadeia);
+            return new Queue<Simbolo>(r);
+        }
+        
+        public Simbolo Busca(object cadeia, string escopo = "")
+        {
+            var localId = cadeia.ToString() + "#" + escopo;
+            var globalId = cadeia.ToString();
+            if (escopo != "")
             {
-                if (TabelaProcedimento.ContainsKey(SimboloId))
-                {
-                    return TabelaProcedimento[SimboloId];
-                }
-                return null;
+                var simbolo = Tabela.ContainsKey(localId) ? Tabela[localId] : Tabela.ContainsKey(globalId) ? Tabela[globalId] : null;
+                return simbolo;
             }
             else
             {
-                if (TabelaPrograma.ContainsKey(SimboloId))
-                {
-                    return TabelaPrograma[SimboloId];
-                }
+                var simbolo = Tabela.ContainsKey(globalId) ? Tabela[globalId] : null;
+                return simbolo;
+            }
+        }
+
+        public Simbolo Busca(Simbolo s)
+        {
+            return Busca(s.Cadeia, s.Escopo);
+        }
+
+        private Simbolo BuscaForAdd(Simbolo s)
+        {
+            var simbolo = Busca(s.Cadeia, s.Escopo);
+            if (simbolo != null && simbolo.Escopo != s.Escopo)
+            {
                 return null;
             }
+            return simbolo;
         }
 
-        public Simbolo Insere(Simbolo simbolo, bool isProcedure)
+        public Simbolo Insere(Simbolo simbolo)
         {
-            var aux = Busca(simbolo.SimboloId, isProcedure);
-            if (isProcedure)
+            var s = BuscaForAdd(simbolo);
+            if (s == null)
             {
-                if (aux == null)
+                Tabela[simbolo.SimboloId] = simbolo;
+                if (simbolo.Categoria == "procedure")
                 {
-                    TabelaProcedimento[simbolo.SimboloId] = simbolo;
-                    return null;
+                    simbolo = new Simbolo(simbolo.Token, simbolo.Cadeia, simbolo.Categoria, simbolo.Valor);
+                    Tabela[simbolo.SimboloId] = simbolo;
                 }
             }
-            else
-            {
-                if (aux == null)
-                {
-                    TabelaPrograma[simbolo.SimboloId] = simbolo;
-                    return null;
-                }
-            }
-            return aux;
-            
+            return s;
         }
 
-        public List<Simbolo> Insere(ref Queue<Simbolo> fila, string tipo, bool isProcedure)
+        public Simbolo Insere(ref Queue<Simbolo> fila, string tipo)
         {
-            var erros = new List<Simbolo>();
             Simbolo aux;
             while (fila.Any())
             {
                 var simbolo = fila.Dequeue();
                 simbolo.Tipo = tipo;
-                aux = Insere(simbolo, isProcedure);
+                aux = Insere(simbolo);
                 if (aux != null)
                 {
-                    erros.Add(aux);
+                    aux.SetMsgErro(MsgErrosSemanticos.JA_DECLARADO);
+                    return aux;
                 }
-            }
-            if (erros.Any())
-            {
-                return erros;
             }
             return null;
         }

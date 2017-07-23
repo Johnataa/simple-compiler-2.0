@@ -41,19 +41,23 @@ namespace SimpleCompilerPresentation
             }
             else
             {
-                Sintatico.Analyze();
-                if (Sintatico.Erros.Any())
+                try
                 {
-                    Console.Text = ErroSintatico(Sintatico.Erros);
-                }
-                else if (Sintatico.ErrosSemanticos.Any())
-                {
-                    Console.Text = ErroSemantico(Sintatico.ErrosSemanticos);
-                }
-                else
-                {
+                    Sintatico.Analyze();
+
                     var sucesso = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✓\r\n\r\nHora: " + DateTime.Now.ToLongTimeString();
                     Console.Text = sucesso;
+                }
+                catch (Exception ex)
+                {                    
+                    if (ex.Message.Contains("#sintatico#"))
+                    {
+                        Console.Text = ErroSintatico(ex.Message);
+                    }
+                    else
+                    {
+                        Console.Text = ErroSemantico(ex.Message);
+                    }
                 }
             }
         }
@@ -232,23 +236,17 @@ namespace SimpleCompilerPresentation
             return text;
         }
 
-        private string ErroSemantico(List<Simbolo> content)
+        private string ErroSemantico(string s)
         {
             string text = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✗:\r\n\r\n";
-            foreach (var item in content)
-            {
-                text += "Variável '" + item.Cadeia + "' já declarada na linha " + item.Token.Linha + ".\r\n\r\n";
-            }
+            text += s;
             return text;
         }
 
-        private string ErroSintatico(Dictionary<Token, object> content)
+        private string ErroSintatico(string s)
         {
             string text = "Análise Léxica ✓\r\nAnálise Sintática ✗:\r\n\r\n";
-            foreach (var item in content)
-            {
-                text += "Esperado: " + item.Value + "\r\nEncontrado: " + item.Key.Lexema + "\r\nLinha:" + item.Key.Linha + "\r\n\r\n";
-            }
+            text += s.Replace("#sintatico#", "");
             return text;
         }
         #endregion
