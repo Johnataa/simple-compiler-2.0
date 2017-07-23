@@ -191,27 +191,31 @@ namespace SimpleCompilerService.Analisador
             }
         }
 
-        private static void Expressao(Simbolo pEsq)
+        private static Simbolo Expressao(Simbolo pEsq)
         {
-            Termo(pEsq);
-            Outros_termos(pEsq);
+            var tDir = Termo(pEsq);
+            var oDir = Outros_termos(tDir);
+            return oDir;
         }
 
-        private static void Termo(Simbolo pEsq)
+        private static Simbolo Termo(Simbolo pEsq)
         {
             Op_un();
-            Fator(pEsq);
-            Mais_fatores(pEsq);
+            var fDir = Fator(pEsq);
+            var mDir = Mais_fatores(fDir);
+            return mDir;
         }
 
-        private static void Mais_fatores(Simbolo pEsq)
+        private static Simbolo Mais_fatores(Simbolo pEsq)
         {
             if (Lexico.NextTokenIs('*') || Lexico.NextTokenIs('/'))
             {
                 Op_mul();
-                Fator(pEsq);
-                Mais_fatores(pEsq);
-            }            
+                var fDir = Fator(pEsq);
+                var mDir = Mais_fatores(fDir);
+                return mDir;
+            }
+            return pEsq;
         }
 
         private static void Op_mul()
@@ -219,7 +223,7 @@ namespace SimpleCompilerService.Analisador
             CurrentTokenIs('*', '/');
         }
 
-        private static void Fator(Simbolo pEsq)
+        private static Simbolo Fator(Simbolo pEsq)
         {
             CurrentToken = Lexico.NextToken();
             if (CurrentToken.Equals('('))
@@ -238,33 +242,56 @@ namespace SimpleCompilerService.Analisador
                 {
                     Error(new Simbolo(CurrentToken, MsgErrosSemanticos.NAO_DECLARADO));
                 }
-                pEsq.Token.Linha = CurrentToken.Linha;
-                if (simbolo.Tipo != pEsq.Tipo)
+                simbolo.Token.Linha = CurrentToken.Linha;
+                if (pEsq != null)
                 {
-                    pEsq.SetMsgErro(MsgErrosSemanticos.ATRIBUICAO_ERRADA, simbolo.Tipo);
-                    Error(pEsq);
+                    if (simbolo.Tipo != pEsq.Tipo)
+                    {
+                        pEsq.SetMsgErro(MsgErrosSemanticos.ATRIBUICAO_ERRADA, simbolo);
+                        Error(pEsq);
+                    }
+                    pEsq.Token.Linha = CurrentToken.Linha;
+                    return pEsq;
                 }
+                return simbolo;
             }
             else if (CurrentToken.Tag == Tag.NUMERO_INTEIRO)
             {
-                if (pEsq.Tipo != "integer")
+                var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema);
+                s.Tipo = CurrentToken.GetTagDescription();
+                if (pEsq != null)
                 {
-                    pEsq.SetMsgErro(MsgErrosSemanticos.ATRIBUICAO_ERRADA, "integer");
-                    Error(pEsq);
+                    if (pEsq.Tipo != "integer")
+                    {
+                        pEsq.SetMsgErro(MsgErrosSemanticos.ATRIBUICAO_ERRADA, s);
+                        Error(pEsq);
+                    }
+                    pEsq.Token.Linha = CurrentToken.Linha;
+                    return pEsq;
                 }
+                return s;
             }
             else if (CurrentToken.Tag == Tag.NUMERO_REAL)
             {
-                if (pEsq.Tipo != "real")
+                var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema);
+                s.Tipo = CurrentToken.GetTagDescription();
+                if (pEsq != null)
                 {
-                    pEsq.SetMsgErro(MsgErrosSemanticos.ATRIBUICAO_ERRADA, "real");
-                    Error(pEsq);
+                    if (pEsq.Tipo != "real")
+                    {
+                        pEsq.SetMsgErro(MsgErrosSemanticos.ATRIBUICAO_ERRADA, s);
+                        Error(pEsq);
+                    }
+                    pEsq.Token.Linha = CurrentToken.Linha;
+                    return pEsq;
                 }
+                return s;
             }
             else
             {
                 Error("N° inteiro, N° real ou identificador");
             }
+            return pEsq;
         }
 
         private static void Op_un()
@@ -275,14 +302,16 @@ namespace SimpleCompilerService.Analisador
             }
         }
 
-        private static void Outros_termos(Simbolo pEsq)
+        private static Simbolo Outros_termos(Simbolo pEsq)
         {
             if (Lexico.NextTokenIs('+') || Lexico.NextTokenIs('-'))
             {
                 Op_ad();
-                Termo(pEsq);
-                Outros_termos(pEsq);
+                var tDir = Termo(pEsq);
+                var oDir = Outros_termos(tDir);
+                return oDir;
             }
+            return pEsq;
         }
 
         private static void Op_ad()
@@ -300,9 +329,9 @@ namespace SimpleCompilerService.Analisador
 
         private static void Condicao()
         {
-            Expressao(null);
+            var eDir = Expressao(null);
             Relacao();
-            Expressao(null);
+            Expressao(eDir);
         }
 
         private static void Relacao()

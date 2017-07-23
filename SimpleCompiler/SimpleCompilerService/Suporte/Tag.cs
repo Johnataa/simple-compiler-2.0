@@ -16,10 +16,10 @@ namespace SimpleCompilerService.Suporte
         [Description("Palavra Reservada")]
         PALAVRA_RESERVADA,
 
-        [Description("Número Inteiro")]
+        [Description("integer")]
         NUMERO_INTEIRO,
 
-        [Description("Número Real")]
+        [Description("real")]
         NUMERO_REAL,
 
         [Description("Identificador")]

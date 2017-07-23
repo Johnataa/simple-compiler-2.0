@@ -56,9 +56,9 @@ namespace SimpleCompilerService.Suporte
             MsgErro = msgErro.Replace("{0}", Cadeia).Replace("{1}", esperado.ToString()).Replace("{2}", encontrado.ToString()).Replace("{3}", Token.Linha.ToString());
         }
 
-        public void SetMsgErro(string msgErro, string tipo)
+        public void SetMsgErro(string msgErro, Simbolo s)
         {
-            MsgErro = msgErro.Replace("{0}", Cadeia).Replace("{1}", Tipo).Replace("{2}", tipo).Replace("{3}", Token.Linha.ToString());
+            MsgErro = msgErro.Replace("{0}", Cadeia).Replace("{1}", Tipo).Replace("{2}", s.Tipo).Replace("{3}", s.Token.Linha.ToString());
         }
         #endregion
     }
