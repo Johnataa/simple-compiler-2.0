@@ -144,6 +144,7 @@ namespace SimpleCompilerService.Analisador
             {
                 CurrentToken = Lexico.NextToken();
                 Argumentos();
+                
                 if (parametros.Count() != FilaSimbolos.Count())
                 {
                     pEsq.SetMsgErro(MsgErrosSemanticos.PARAMETROS_INCORRETOS, parametros.Count(), FilaSimbolos.Count());
@@ -323,6 +324,7 @@ namespace SimpleCompilerService.Analisador
         {
             if (Lexico.NextTokenIs("else"))
             {
+                CurrentToken = Lexico.NextToken();
                 Comandos();
             }
         }
