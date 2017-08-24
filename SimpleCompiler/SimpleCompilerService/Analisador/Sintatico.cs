@@ -10,13 +10,13 @@ namespace SimpleCompilerService.Analisador
         #region 1. Propriedades
         private static Token CurrentToken;
 
-        #region 1.1. Propriedades Semânticas
         private static TabelaDeSimbolos TabelaDeSimbolos;
         private static Queue<Simbolo> FilaSimbolos;
         private static string Categoria;
-        private static string Escopo;        
-        #endregion
+        private static string Escopo;
 
+        private static int EnderecoRelativo;
+        private static MaquinaHipotetica MaqHip;
         #endregion
 
         #region 2. Métodos Públicos
@@ -24,6 +24,8 @@ namespace SimpleCompilerService.Analisador
         {
             TabelaDeSimbolos = new TabelaDeSimbolos();
             FilaSimbolos = new Queue<Simbolo>();
+            MaqHip = new MaquinaHipotetica();
+            EnderecoRelativo = 0;
             Programa();
         }
 
@@ -36,8 +38,12 @@ namespace SimpleCompilerService.Analisador
             {
                 if (CurrentTokenIs(Tag.IDENTIFICADOR))
                 {
+                    MaqHip.C.Add("INPP");
                     Corpo();
-                    CurrentTokenIs('.');
+                    if (CurrentTokenIs('.'))
+                    {
+                        MaqHip.C.Add("PARA");
+                    }
                 }
             }
         }
@@ -94,16 +100,28 @@ namespace SimpleCompilerService.Analisador
             {
                 if (CurrentTokenIs('('))
                 {
-                    Variaveis();
+
+                    Variaveis(false);
+                    var instrucao = "CRVL ";
+                    if (CurrentToken.Equals("read"))
+                    {
+                        MaqHip.C.Add("LEIT");
+                        instrucao = "ARMZ ";
+                    }
                     while (FilaSimbolos.Any())
                     {
                         var simbolo = FilaSimbolos.Dequeue();
-                        var encontrou = TabelaDeSimbolos.Busca(simbolo) != null;
-                        if (!encontrou)
+                        var s = TabelaDeSimbolos.Busca(simbolo);
+                        if (s == null)
                         {
                             simbolo.SetMsgErro(MsgErrosSemanticos.NAO_DECLARADO);
                             Error(simbolo);
                         }
+                        MaqHip.C.Add(instrucao + s.EnderecoRelativo);
+                    }
+                    if (instrucao == "CRVL ")
+                    {
+                        MaqHip.C.Add("IMPR");
                     }
                     CurrentTokenIs(')');
                 }
@@ -258,7 +276,7 @@ namespace SimpleCompilerService.Analisador
             }
             else if (CurrentToken.Tag == Tag.NUMERO_INTEIRO)
             {
-                var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema);
+                var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema, -1);
                 s.Tipo = CurrentToken.GetTagDescription();
                 if (pEsq != null)
                 {
@@ -274,7 +292,7 @@ namespace SimpleCompilerService.Analisador
             }
             else if (CurrentToken.Tag == Tag.NUMERO_REAL)
             {
-                var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema);
+                var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema, -1);
                 s.Tipo = CurrentToken.GetTagDescription();
                 if (pEsq != null)
                 {
@@ -363,16 +381,22 @@ namespace SimpleCompilerService.Analisador
                 Categoria = "procedure";
                 if (CurrentTokenIs(Tag.IDENTIFICADOR))
                 {
-                    var simbolo = new Simbolo(CurrentToken, Escopo, Categoria, null);
+                    var i = MaqHip.C.Count();
+                    MaqHip.C.Add("DSVI");
+                    var simbolo = new Simbolo(CurrentToken, Escopo, Categoria, null, EnderecoRelativo++, i+1);
                     var adicionou = TabelaDeSimbolos.Insere(simbolo) == null;
                     if (!adicionou)
                     {
                         simbolo.SetMsgErro(MsgErrosSemanticos.JA_DECLARADO);
                         Error(simbolo);
                     }
-                    Escopo = simbolo.Cadeia;                    
+                    Escopo = simbolo.Cadeia;
                     Parametros();
                     Corpo_p();
+                    MaqHip.C[i] = "DSVI " + MaqHip.C.Count();
+                    i = TabelaDeSimbolos.BuscaParametros(simbolo).Count() + 1;
+                    MaqHip.C.Add("DESM " + i);
+                    MaqHip.C.Add("RTPR");
                 }
             }
         }
@@ -467,11 +491,16 @@ namespace SimpleCompilerService.Analisador
             }
         }
 
-        private static void Variaveis()
+        private static void Variaveis(bool novo = true)
         {
             if (CurrentTokenIs(Tag.IDENTIFICADOR))
             {
-                FilaSimbolos.Enqueue(new Simbolo(CurrentToken, Escopo, Categoria, null));
+                var simbolo = new Simbolo(CurrentToken, Escopo, Categoria, null, -1);
+                if (novo)
+                {
+                    simbolo.EnderecoRelativo = EnderecoRelativo++;
+                }
+                FilaSimbolos.Enqueue(simbolo);
                 Mais_var();
             }
         }

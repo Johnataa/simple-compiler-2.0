@@ -60,7 +60,7 @@ namespace SimpleCompilerService.Suporte
                 Tabela[simbolo.SimboloId] = simbolo;
                 if (simbolo.Categoria == "procedure")
                 {
-                    simbolo = new Simbolo(simbolo.Token, simbolo.Cadeia, simbolo.Categoria, simbolo.Valor);
+                    simbolo = new Simbolo(simbolo.Token, simbolo.Cadeia, simbolo.Categoria, simbolo.Valor, simbolo.EnderecoRelativo);
                     Tabela[simbolo.SimboloId] = simbolo;
                 }
             }

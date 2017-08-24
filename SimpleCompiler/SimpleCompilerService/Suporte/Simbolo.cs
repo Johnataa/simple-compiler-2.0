@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SimpleCompilerService.Suporte
+﻿namespace SimpleCompilerService.Suporte
 {
     public class Simbolo
     {
@@ -14,10 +11,12 @@ namespace SimpleCompilerService.Suporte
         public string Tipo { get; set; }
         public object Valor { get; set; }
         public string MsgErro { get; set; }
+        public int EnderecoRelativo { get; set; }
+        public int PrimeiraInstrucao { get; set; }
         #endregion
 
         #region 2. Métodos Construtores
-        public Simbolo(Token token, string escopo, string categoria, object valor)
+        public Simbolo(Token token, string escopo, string categoria, object valor, int enderecoRelativo, int primeiraInstrucao = 0)
         {
             SimboloId = token.Lexema.ToString();
             if (escopo != "")
@@ -30,6 +29,8 @@ namespace SimpleCompilerService.Suporte
             Token = token;
             Valor = valor;
             Tipo = categoria == "procedure" ? "void" : "";
+            EnderecoRelativo = enderecoRelativo;
+            PrimeiraInstrucao = primeiraInstrucao;
         }
 
         public Simbolo(Token token, string msgErro)
