@@ -20,7 +20,24 @@ namespace SimpleCompilerService.Suporte
                 .Where(p => p.Categoria == "param" && p.Escopo == s.Cadeia);
             return new Queue<Simbolo>(r);
         }
-        
+        public int CountParametros(Simbolo s)
+        {
+
+            var r = Tabela
+                .Select(p => p.Value)
+                .Count(p => p.Categoria == "param" && p.Escopo == s.Cadeia);
+            return r;
+        }
+
+        public int CountVariaveis(Simbolo s)
+        {
+
+            var r = Tabela
+                .Select(p => p.Value)
+                .Count(p => p.Categoria == "var" && p.Escopo == s.Cadeia);
+            return r;
+        }
+
         public Simbolo Busca(object cadeia, string escopo = "")
         {
             var localId = cadeia.ToString() + "#" + escopo;

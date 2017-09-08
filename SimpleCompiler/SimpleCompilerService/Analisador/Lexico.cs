@@ -65,7 +65,6 @@ namespace SimpleCompilerService.Analisador
                             if (Peek == '\n')
                             {
                                 linha++;
-                                Peek = NextChar();
                                 continue;
                             }
                             if (Peek == '*')

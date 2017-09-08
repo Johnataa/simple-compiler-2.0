@@ -1,6 +1,7 @@
 ﻿using SimpleCompilerService.Suporte;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SimpleCompilerService.Analisador
@@ -24,7 +25,7 @@ namespace SimpleCompilerService.Analisador
         {
             TabelaDeSimbolos = new TabelaDeSimbolos();
             FilaSimbolos = new Queue<Simbolo>();
-            MaqHip = new MaquinaHipotetica();
+            MaqHip = MaquinaHipotetica.GetInstance(true);
             EnderecoRelativo = 0;
             Programa();
         }
@@ -80,34 +81,40 @@ namespace SimpleCompilerService.Analisador
             if (CurrentToken.Equals("if"))
             {
                 Condicao();
+                int pos = MaqHip.C.Count();
+                MaqHip.C.Add("DSVF");
                 if (CurrentTokenIs("then"))
                 {
                     Comandos();
+                    MaqHip.C[pos] = "DSVF " + (MaqHip.C.Count()+1);
+                    pos = MaqHip.C.Count();
+                    MaqHip.C.Add("DSVI");
                     Pfalsa();
+                    MaqHip.C[pos] = "DSVI " + MaqHip.C.Count();
                     CurrentTokenIs('$');
                 }
             }
             else if (CurrentToken.Equals("while"))
             {
+                int inicio = MaqHip.C.Count();
                 Condicao();
                 if (CurrentTokenIs("do"))
                 {
+                    int loop = MaqHip.C.Count();
+                    MaqHip.C.Add("DSVF");
                     Comandos();
+                    MaqHip.C.Add("DSVI " + inicio);
+                    MaqHip.C[loop] = "DSVF " + MaqHip.C.Count();
                     CurrentTokenIs('$');
                 }
             }
             else if(CurrentToken.Equals("read") || CurrentToken.Equals("write"))
             {
+                var isRead = CurrentToken.Equals("read");
                 if (CurrentTokenIs('('))
                 {
 
                     Variaveis(false);
-                    var instrucao = "CRVL ";
-                    if (CurrentToken.Equals("read"))
-                    {
-                        MaqHip.C.Add("LEIT");
-                        instrucao = "ARMZ ";
-                    }
                     while (FilaSimbolos.Any())
                     {
                         var simbolo = FilaSimbolos.Dequeue();
@@ -117,11 +124,17 @@ namespace SimpleCompilerService.Analisador
                             simbolo.SetMsgErro(MsgErrosSemanticos.NAO_DECLARADO);
                             Error(simbolo);
                         }
-                        MaqHip.C.Add(instrucao + s.EnderecoRelativo);
-                    }
-                    if (instrucao == "CRVL ")
-                    {
-                        MaqHip.C.Add("IMPR");
+                        if (isRead)
+                        {
+                            MaqHip.C.Add("LEIT");
+                            MaqHip.C.Add("ARMZ " + s.EnderecoRelativo);
+                        }
+                        else
+                        {
+                            MaqHip.C.Add("CRVL " + s.EnderecoRelativo);
+                            MaqHip.C.Add("IMPR");
+                        }
+                        
                     }
                     CurrentTokenIs(')');
                 }
@@ -135,6 +148,7 @@ namespace SimpleCompilerService.Analisador
                 }
                 simbolo.Token.Linha = CurrentToken.Linha;
                 RestoIdent(simbolo);
+
             }
             else
             {
@@ -148,10 +162,15 @@ namespace SimpleCompilerService.Analisador
             {
                 CurrentToken = Lexico.NextToken();
                 Expressao(pEsq);
+                MaqHip.C.Add("ARMZ " + pEsq.EnderecoRelativo);
             }
             else
             {
+                int retorno = MaqHip.C.Count();
+                MaqHip.C.Add("PUSHER");
                 Lista_arg(pEsq);
+                MaqHip.C.Add("CHPR " + pEsq.PrimeiraInstrucao);
+                MaqHip.C[retorno] = "PUSHER " + MaqHip.C.Count();
             }            
         }
 
@@ -177,6 +196,7 @@ namespace SimpleCompilerService.Analisador
                         pEsq.SetMsgErro(MsgErrosSemanticos.PARAMETRO_ERRADO, sim, param);
                         Error(pEsq);
                     }
+                    MaqHip.C.Add("PARAM " + sim.EnderecoRelativo);
                 }
                 CurrentTokenIs(')');
             }
@@ -219,8 +239,12 @@ namespace SimpleCompilerService.Analisador
 
         private static Simbolo Termo(Simbolo pEsq)
         {
-            Op_un();
+            var sinal = Op_un();
             var fDir = Fator(pEsq);
+            if (sinal != null && sinal == '-')
+            {
+                MaqHip.C.Add("INVE");
+            }
             var mDir = Mais_fatores(fDir);
             return mDir;
         }
@@ -229,17 +253,19 @@ namespace SimpleCompilerService.Analisador
         {
             if (Lexico.NextTokenIs('*') || Lexico.NextTokenIs('/'))
             {
-                Op_mul();
+                var inst = Op_mul();
                 var fDir = Fator(pEsq);
+                MaqHip.C.Add(inst);
                 var mDir = Mais_fatores(fDir);
                 return mDir;
             }
             return pEsq;
         }
 
-        private static void Op_mul()
+        private static string Op_mul()
         {
             CurrentTokenIs('*', '/');
+            return CurrentToken.Equals('*') ? "MULT" : "DIVI";
         }
 
         private static Simbolo Fator(Simbolo pEsq)
@@ -270,13 +296,16 @@ namespace SimpleCompilerService.Analisador
                         Error(pEsq);
                     }
                     pEsq.Token.Linha = CurrentToken.Linha;
+                    MaqHip.C.Add("CRVL " + simbolo.EnderecoRelativo);
                     return pEsq;
                 }
+                MaqHip.C.Add("CRVL " + simbolo.EnderecoRelativo);
                 return simbolo;
             }
             else if (CurrentToken.Tag == Tag.NUMERO_INTEIRO)
             {
                 var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema, -1);
+                MaqHip.C.Add("CRCT " + s.Valor);
                 s.Tipo = CurrentToken.GetTagDescription();
                 if (pEsq != null)
                 {
@@ -293,6 +322,7 @@ namespace SimpleCompilerService.Analisador
             else if (CurrentToken.Tag == Tag.NUMERO_REAL)
             {
                 var s = new Simbolo(CurrentToken, Escopo, "", CurrentToken.Lexema, -1);
+                MaqHip.C.Add("CRCT " + s.Valor);
                 s.Tipo = CurrentToken.GetTagDescription();
                 if (pEsq != null)
                 {
@@ -313,29 +343,33 @@ namespace SimpleCompilerService.Analisador
             return pEsq;
         }
 
-        private static void Op_un()
+        private static char? Op_un()
         {
             if (Lexico.NextTokenIs('+') || Lexico.NextTokenIs('-'))
             {
                 CurrentToken = Lexico.NextToken();
+                return (char)CurrentToken.Lexema;
             }
+            return null;
         }
 
         private static Simbolo Outros_termos(Simbolo pEsq)
         {
             if (Lexico.NextTokenIs('+') || Lexico.NextTokenIs('-'))
             {
-                Op_ad();
+                var inst = Op_ad();
                 var tDir = Termo(pEsq);
+                MaqHip.C.Add(inst);
                 var oDir = Outros_termos(tDir);
                 return oDir;
             }
             return pEsq;
         }
 
-        private static void Op_ad()
+        private static string Op_ad()
         {
             CurrentTokenIs('+','-');
+            return CurrentToken.Equals('+') ? "SOMA" : "SUBT";
         }
 
         private static void Pfalsa()
@@ -350,13 +384,38 @@ namespace SimpleCompilerService.Analisador
         private static void Condicao()
         {
             var eDir = Expressao(null);
-            Relacao();
+            var inst = Relacao();
             Expressao(eDir);
+            MaqHip.C.Add(inst);
         }
 
-        private static void Relacao()
+        private static string Relacao()
         {
             CurrentTokenIs('<', "<=", "<>", '=', ">=", '>');
+            if (CurrentToken.Equals('<'))
+            {
+                return "CPME";
+            }
+            else if (CurrentToken.Equals("<="))
+            {
+                return "CPMI";
+            }
+            else if (CurrentToken.Equals("<>"))
+            {
+                return "CDES";
+            }
+            else if (CurrentToken.Equals('='))
+            {
+                return "CPIG";
+            }
+            else if (CurrentToken.Equals(">="))
+            {
+                return "CMAI";
+            }
+            else
+            {
+                return "CPMA";
+            }
         }
 
         private static void Dc()
@@ -393,10 +452,10 @@ namespace SimpleCompilerService.Analisador
                     Escopo = simbolo.Cadeia;
                     Parametros();
                     Corpo_p();
-                    MaqHip.C[i] = "DSVI " + MaqHip.C.Count();
-                    i = TabelaDeSimbolos.BuscaParametros(simbolo).Count() + 1;
-                    MaqHip.C.Add("DESM " + i);
+                    var j = TabelaDeSimbolos.CountParametros(simbolo) + TabelaDeSimbolos.CountVariaveis(simbolo);
+                    MaqHip.C.Add("DESM " + j);
                     MaqHip.C.Add("RTPR");
+                    MaqHip.C[i] = "DSVI " + MaqHip.C.Count();
                 }
             }
         }
@@ -442,7 +501,7 @@ namespace SimpleCompilerService.Analisador
 
         private static void Lista_par()
         {
-            Variaveis();
+            Variaveis(false);
             if (CurrentTokenIs(':'))
             {
                 Tipo_var();
@@ -496,21 +555,22 @@ namespace SimpleCompilerService.Analisador
             if (CurrentTokenIs(Tag.IDENTIFICADOR))
             {
                 var simbolo = new Simbolo(CurrentToken, Escopo, Categoria, null, -1);
+                simbolo.EnderecoRelativo = EnderecoRelativo++;
                 if (novo)
                 {
-                    simbolo.EnderecoRelativo = EnderecoRelativo++;
+                    MaqHip.C.Add("ALME 1");
                 }
                 FilaSimbolos.Enqueue(simbolo);
-                Mais_var();
+                Mais_var(novo);
             }
         }
 
-        private static void Mais_var()
+        private static void Mais_var(bool novo = true)
         {
             if (Lexico.NextTokenIs(','))
             {
                 CurrentToken = Lexico.NextToken();
-                Variaveis();
+                Variaveis(novo);
             }
         }
 

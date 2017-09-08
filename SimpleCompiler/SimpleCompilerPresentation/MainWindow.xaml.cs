@@ -39,7 +39,7 @@ namespace SimpleCompilerPresentation
                 var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO).ToList();
                 Console.Text = ErroLexico(erros);
             }
-            else
+            else if (Lexico.Tokens.Any())
             {
                 try
                 {
@@ -47,6 +47,8 @@ namespace SimpleCompilerPresentation
 
                     var sucesso = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✓\r\n\r\nHora: " + DateTime.Now.ToLongTimeString();
                     Console.Text = sucesso;
+                    var janelaInstrucoes = new Instrucoes(MaquinaHipotetica.GetInstance().C);
+                    janelaInstrucoes.Show();
                 }
                 catch (Exception ex)
                 {                    
@@ -59,6 +61,11 @@ namespace SimpleCompilerPresentation
                         Console.Text = ErroSemantico(ex.Message);
                     }
                 }
+            }
+            else
+            {
+                var sucesso = "Análise Léxica ✓\r\nApenas Comentários...\r\n\r\nHora: " + DateTime.Now.ToLongTimeString();
+                Console.Text = sucesso;
             }
         }
 
