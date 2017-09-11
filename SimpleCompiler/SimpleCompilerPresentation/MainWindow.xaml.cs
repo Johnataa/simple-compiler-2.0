@@ -1,6 +1,4 @@
 ﻿using Microsoft.Win32;
-using SimpleCompilerService.Analisador;
-using SimpleCompilerService.Suporte;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +7,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 
-namespace SimpleCompilerPresentation
+namespace SimpleCompiler
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -36,7 +34,7 @@ namespace SimpleCompilerPresentation
             Lexico.ScanText(sourceCode);
             if (Lexico.ContemErroLexico)
             {
-                var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompilerService.Suporte.Tag.ERRO_LEXICO).ToList();
+                var erros = Lexico.Tokens.Where(t => t.Tag == SimpleCompiler.Tag.ERRO_LEXICO).ToList();
                 Console.Text = ErroLexico(erros);
             }
             else if (Lexico.Tokens.Any())
@@ -47,8 +45,10 @@ namespace SimpleCompilerPresentation
 
                     var sucesso = "Análise Léxica ✓\r\nAnálise Sintática ✓\r\nAnálise Semântica ✓\r\n\r\nHora: " + DateTime.Now.ToLongTimeString();
                     Console.Text = sucesso;
-                    var janelaInstrucoes = new Instrucoes(MaquinaHipotetica.GetInstance().C);
+                    var janelaInstrucoes = new Instrucoes();
                     janelaInstrucoes.Show();
+                    Console.Text += "\r\n\r\nExecução:\r\n";
+                    MaquinaHipotetica.GetInstance().ExecutarPrograma(Console);
                 }
                 catch (Exception ex)
                 {                    

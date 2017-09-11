@@ -1,9 +1,8 @@
-﻿using SimpleCompilerService.Suporte;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SimpleCompilerService.Analisador
+namespace SimpleCompiler
 {
     public class Sintatico
     {

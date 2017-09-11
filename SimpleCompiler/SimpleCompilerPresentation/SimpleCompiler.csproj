@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{AF773B43-91EC-4AC9-90A9-1DB001FDF9CA}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>SimpleCompilerPresentation</RootNamespace>
+    <RootNamespace>SimpleCompiler</RootNamespace>
     <AssemblyName>Simple Compiler 2.0</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -37,6 +37,9 @@
   <PropertyGroup>
     <ApplicationIcon>compiler.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>SimpleCompiler.App</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MaterialDesignColors, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MaterialDesignColors.1.1.2\lib\net45\MaterialDesignColors.dll</HintPath>
@@ -64,7 +67,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Instrucoes.xaml">
+    <Page Include="View\InputDialogSample.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Instrucoes.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -72,11 +79,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Analisador\Lexico.cs" />
+    <Compile Include="Analisador\Sintatico.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Instrucoes.xaml.cs">
+    <Compile Include="Suporte\MaquinaHipotetica.cs" />
+    <Compile Include="Suporte\MsgErrosSemanticos.cs" />
+    <Compile Include="Suporte\Simbolo.cs" />
+    <Compile Include="Suporte\TabelaDeSimbolos.cs" />
+    <Compile Include="Suporte\Tag.cs" />
+    <Compile Include="Suporte\Token.cs" />
+    <Compile Include="View\InputDialogSample.xaml.cs">
+      <DependentUpon>InputDialogSample.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Instrucoes.xaml.cs">
       <DependentUpon>Instrucoes.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
@@ -113,12 +131,6 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SimpleCompilerService\SimpleCompilerService.csproj">
-      <Project>{fe577550-fa52-42d9-ba4f-dcedc5c5205d}</Project>
-      <Name>SimpleCompilerService</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="compiler.ico" />

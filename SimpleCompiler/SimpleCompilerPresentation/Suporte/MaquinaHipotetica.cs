@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Controls;
 
-namespace SimpleCompilerPresentation
+namespace SimpleCompiler
 {
     public class MaquinaHipotetica
     {
@@ -10,6 +11,8 @@ namespace SimpleCompilerPresentation
         public List<string> C { get; set; }
         public List<object> D { get; set; }
         private int _i;
+        private int _input;
+        private TextBlock _console;
 
         private MaquinaHipotetica()
         {
@@ -25,9 +28,11 @@ namespace SimpleCompilerPresentation
             return _maqHip;
         }
 
-        public void ExecutarPrograma()
+        public void ExecutarPrograma(TextBlock console)
         {
             _i = 0;
+            _input = 1;
+            _console = console;
             while (_i < C.Count())
             {
                 var aux = C[_i].Split(' ');
@@ -161,22 +166,18 @@ namespace SimpleCompilerPresentation
         public void LEIT()
         {
             //TODO:  e agora josé?
-            var inputDialog = new InputDialogSample("Informe a 1º entrada", "");
+            var inputDialog = new InputDialogSample("Informe a " + _input++ + "º entrada", "");
+            double input = 0;
             if (inputDialog.ShowDialog() == true)
             {
-                Debug.WriteLine(inputDialog.Answer);
+                double.TryParse(inputDialog.Answer, out input);
             }
-            else
-            {
-                Debug.WriteLine(inputDialog.Answer);
-            }
-            var input = 2;
             D.Add(input);
         }
         public void IMPR()
         {
             var output = DPop();
-            Debug.WriteLine(output);
+            _console.Text += output + "\r\n";
         }
 
         public void PARA()
