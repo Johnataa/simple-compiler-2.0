@@ -113,6 +113,7 @@ namespace SimpleCompiler
                 {
 
                     Variaveis(false);
+                    var tipo = "";
                     while (FilaSimbolos.Any())
                     {
                         var simbolo = FilaSimbolos.Dequeue();
@@ -120,6 +121,15 @@ namespace SimpleCompiler
                         if (s == null)
                         {
                             simbolo.SetMsgErro(MsgErrosSemanticos.NAO_DECLARADO);
+                            Error(simbolo);
+                        }
+                        if (tipo == "")
+                        {
+                            tipo = s.Tipo;
+                        }
+                        else if (tipo != s.Tipo)
+                        {
+                            simbolo.SetMsgErro(MsgErrosSemanticos.TIPOS_DIFERENTES, tipo);
                             Error(simbolo);
                         }
                         if (isRead)

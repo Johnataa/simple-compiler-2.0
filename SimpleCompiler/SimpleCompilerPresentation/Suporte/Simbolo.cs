@@ -61,6 +61,11 @@
         {
             MsgErro = msgErro.Replace("{0}", Cadeia).Replace("{1}", Tipo).Replace("{2}", s.Tipo).Replace("{3}", s.Token.Linha.ToString());
         }
+
+        public void SetMsgErro(string msgErro, string tipo)
+        {
+            MsgErro = msgErro.Replace("{0}", Cadeia).Replace("{1}", tipo).Replace("{2}", Token.Linha.ToString());
+        }
         #endregion
     }
 }
